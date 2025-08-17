@@ -15,6 +15,7 @@ def mock_prompt_template():
         "Format:\n{expected_json_format}"
     )
 
+
 @pytest.fixture
 def mock_context():
     return FunctionContextModel(

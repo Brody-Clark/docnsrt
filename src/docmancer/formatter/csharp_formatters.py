@@ -3,20 +3,20 @@ from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
 from docmancer.models.documentation_model import DocumentationModel
 from docmancer.formatter.formatter_base import FormatterBase
+from docmancer.models.formatted_summary_model import FormattedSummaryModel
 
 COMMENT_START = "/// "
 
 
-class csharpXmlFormatter(FormatterBase):
+class CSharpXmlFormatter(FormatterBase):
 
     def get_formatted_documentation(
         self,
         func_context: FunctionContextModel,
-        func_summary: FunctionSummaryModel,
-        file_path: str,
-    ) -> DocumentationModel:
+        func_summary: FunctionSummaryModel
+    ) -> FormattedSummaryModel:
         function_signature_offset = fu.get_line_text_offset_spaces(
-            file_path, func_context.start_line
+            func_context.file_path, func_context.start_line
         )
 
         lines = [
@@ -43,16 +43,12 @@ class csharpXmlFormatter(FormatterBase):
             offset = function_signature_offset
         else:
             raise ValueError(
-                f"Unable to read start line {func_context.start_line} from file {file_path}"
+                f"Unable to read start line {func_context.start_line} from file {func_context.file_path}"
             )
 
-        doc_model = DocumentationModel(
-            qualified_name=func_context.qualified_name,
+        doc_model = FormattedSummaryModel(
             formatted_documentation=lines,
-            signature=func_context.signature,
             start_line=func_context.start_line - 1,
-            file_path=file_path,
-            existing_docstring=func_context.comments,
             offset_spaces=offset,
         )
 

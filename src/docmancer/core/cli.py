@@ -1,15 +1,14 @@
+from pathlib import Path
 import argparse
 import os
 import yaml
-from pathlib import Path
 from docmancer.config import DocmancerConfig, EnvVarLoader
 from docmancer.core.styles import (
-    STYLE_DEFINITIONS,
     CANONICAL_STYLE_NAMES,
     LOWERCASE_STYLE_NAMES,
     DEFAULT_STYLE_NAME,
 )
-from docmancer.core.languages import Languages, CANONICAL_LANGUAGE_NAMES
+from docmancer.core.languages import CANONICAL_LANGUAGE_NAMES
 
 
 def load_config(config_path: str) -> dict:
@@ -230,7 +229,7 @@ def parse_args() -> DocmancerConfig:
             user_config = load_config(Path(args.config))
         except Exception as e:
             print("Invalid config path.")
-            return
+            raise
 
         if user_config:
             # Merge explicit config over everything else

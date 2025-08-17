@@ -1,6 +1,5 @@
 from typing import List
 from docmancer.parser.parser_base import ParserBase
-from docmancer.models.function_summary import FunctionSummaryModel
 from docmancer.generators.documentation_generators import GeneratorBase
 from docmancer.formatter.formatter_base import FormatterBase
 from docmancer.core.presenter import Presenter, UserResponse
@@ -25,7 +24,7 @@ class DocumentationBuilderEngine:
     def run(self, settings: DocmancerConfig):
         errors = []
 
-        # Step 1. parse all files/functions into {file_path: List[function]} map
+        # Step 1. Parse all files/functions into {file_path: List[FunctionContextModel]} map
         file_contexts = {}
         files = file_utils.get_files_by_pattern(
             settings.project_dir, settings.files, settings.ignore_files
@@ -46,29 +45,37 @@ class DocumentationBuilderEngine:
         for file_path, func_contexts in file_contexts.items():
             for func_context in func_contexts:
 
-                # Step 2. Convert function contexts to Documention Models
+                # Step 2. Generate summary for function context
                 try:
-                    if settings.no_summary:
-                        summary = self._generator.get_default_summary(func_context[0])
-                    else:
-                        summary = self._generator.generate_summary(func_context[0])
+                    summary = self._generator.get_summary(func_context[0])
                 except Exception as e:
                     errors.append(e)
                     continue
 
-                # Step 3. Convert function summary to formatted documentation
-                doc = self._formatter.get_formatted_documentation(
+                # Step 3. Convert function summary to formatted summary
+                formatted_summary = self._formatter.get_formatted_documentation(
                     func_context=func_context[0],
                     func_summary=summary,
-                    file_path=file_path,
                 )
 
+                # Step 4. Create documentation model database from function context and formatted summary
+                doc = DocumentationModel(
+                    start_line=formatted_summary.start_line,
+                    qualified_name=func_context[0].qualified_name,
+                    signature=func_context[0].signature,
+                    formatted_documentation=formatted_summary.formatted_documentation,
+                    offset_spaces=formatted_summary.offset_spaces,
+                    file_path=file_path,
+                    existing_docstring=func_context[0].comments
+                )
+                
                 if file_path in doc_model_database:
                     doc_model_database[file_path].append(doc)
                 else:
                     doc_model_database[file_path] = [doc]
 
-        # Step 4. Present the user with generated docs and get approval if "force-all" is not present
+
+        # Step 5. Present the user with generated docs and get approval if "force-all" is not present
         if not settings.force_all:
             for file_path, doc_models in doc_model_database.copy().items():
                 approved_docs = []
@@ -83,7 +90,7 @@ class DocumentationBuilderEngine:
                         approved_docs.append(doc)
                 doc_model_database[file_path] = approved_docs
 
-        # Step 5. Commit formatted docs to files and save
+        # Step 6. Write formatted docstrings to files and save
         for file_path, doc_models in doc_model_database.items():
             if len(doc_models) > 0:
                 try:

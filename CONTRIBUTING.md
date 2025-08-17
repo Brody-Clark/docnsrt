@@ -2,7 +2,19 @@
 
 ## Getting Started
 
+### Installing Poetry
+
 This project uses [Poetry]([Poetry](https://github.com/python-poetry/poetry)) for dependency management and virtual environments.
+
+If you don't have Poetry installed, run:
+
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+See the [Poetry installation docs](https://python-poetry.org/docs/#installing-with-pipx) for more options.
+
+### Setting up Environment
 
 1. Clone the repository
 
@@ -156,3 +168,54 @@ poetry install --with dev
     fix: Correct line offset handling in parser
     chore: refactored python parser
     ```
+
+## Branching Strategy
+
+This project uses a simple branching model to keep development organized and stable.
+
+- **main**: The stable release branch. Only thoroughly tested code is merged here.
+- **dev**: The active development branch. All new features, bug fixes, and changes are merged into dev before being promoted to main.
+- **feature branches**: For new features, improvements, or bug fixes. These branches should be created from dev and merged back into dev via Pull Request.
+
+### Creating a Feature Branch
+
+1. Make sure you are up to date with the dev branch:
+
+    ```bash
+    git checkout dev
+    git pull origin dev
+    ```
+
+2. Create your feature branch:
+
+    ```bash
+    git checkout -b feat/my-new-feature
+    ```
+
+    Use a descriptive name for your branch, prefixed with `feat/`, `fix/`, or `chore/` as appropriate.
+
+### Working on Your Branch
+
+- Commit your changes regularly.
+- Push your branch to the remote repository:
+
+    ```bash
+    git push -u origin feat/my-new-feature
+    ```
+
+### Submitting a Pull Request
+
+- When your work is ready, open a Pull Request (PR) **from your feature branch into dev**.
+- Fill out the PR template and describe your changes clearly.
+- Ensure your branch passes all tests and code style checks before requesting a review.
+
+### Merging
+
+- Feature branches are merged into dev after review and approval.
+- Periodically, dev is merged into main for releases.
+
+**Summary:**
+
+- Always branch off dev.
+- Always merge feature branches into dev via Pull Request.
+- Do not commit directly to main or dev unless performing a release or hotfix.

@@ -2,7 +2,6 @@ from enum import Enum
 import os
 import io
 import sys
-import time
 import threading
 import tempfile
 import subprocess
@@ -13,8 +12,7 @@ from rich.console import Console
 from rich.rule import Rule
 from rich.spinner import Spinner
 from prompt_toolkit.styles import Style
-from prompt_toolkit.shortcuts import prompt, print_formatted_text
-from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.shortcuts import prompt
 from docmancer.models.documentation_model import DocumentationModel
 
 
@@ -68,11 +66,11 @@ class Presenter:
             response = self.interact(doc)
             if response == USER_RESPONSES[UserResponse.QUIT]:
                 return UserResponseModel(doc_model=None, response=UserResponse.QUIT)
-            elif response == USER_RESPONSES[UserResponse.ACCEPT]:
+            if response == USER_RESPONSES[UserResponse.ACCEPT]:
                 return UserResponseModel(doc_model=doc, response=UserResponse.ACCEPT)
-            elif response == USER_RESPONSES[UserResponse.SKIP]:
+            if response == USER_RESPONSES[UserResponse.SKIP]:
                 return UserResponseModel(doc_model=doc, response=UserResponse.SKIP)
-            elif response == USER_RESPONSES[UserResponse.EDIT]:
+            if response == USER_RESPONSES[UserResponse.EDIT]:
                 try:
                     doc.formatted_documentation = self.edit_text_with_editor(
                         doc.formatted_documentation
@@ -96,8 +94,7 @@ class Presenter:
     def get_default_editor(self):
         if platform.system() == "Windows":
             return os.environ.get("EDITOR", "notepad")
-        else:
-            return os.environ.get("EDITOR", "nano")
+        return os.environ.get("EDITOR", "nano")
 
     def print_error(self, message: str):
         """Prints an error message."""
@@ -113,8 +110,6 @@ class Presenter:
         self, task_description: str, slow_task: Callable[..., Any], *args, **kwargs
     ) -> Any:
         spinner_name = "star"
-        # spinner_name="moon"
-        # spinner_name="earth"
         result_container = {"result": None, "exception": None}
 
         def target_function():
@@ -143,7 +138,7 @@ class Presenter:
 
         with self._console.status(
             f"[bold magenta]{task_description}...[/bold magenta]", spinner=spinner_name
-        ) as status:
+        ):
             while thread.is_alive():
                 # Keep the main thread alive and let rich update the spinner
                 pass
@@ -158,7 +153,7 @@ class Presenter:
         # After the thread finishes, retrieve the result or re-raise the exception
         if result_container["exception"]:
             self.print_error(f"Task failed: {result_container['exception']}")
-            raise result_container["exception"]
+            raise Exception(result_container["exception"])
         else:
             return result_container["result"]
 
@@ -184,12 +179,11 @@ class Presenter:
         spinner_name = "line"  # Or another magical spinner
         with self._console.status(
             f"[bold magenta]{task_description}...[/bold magenta]", spinner=spinner_name
-        ) as status:
+        ):
             try:
                 result = await async_slow_task(*args, **kwargs)
                 return result
             except Exception as e:
-                status.stop()  # Ensure spinner stops on error
                 self.print_error(f"Asynchronous task failed: {e}")
                 raise  # Re-raise the exception after printing error
 

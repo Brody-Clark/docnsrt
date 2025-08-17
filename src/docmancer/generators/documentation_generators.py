@@ -1,3 +1,4 @@
+from docmancer.models.functional_models import ExceptionModel
 import docmancer.utils.json_utils as ju
 from docmancer.generators.llm.llm_agent_base import LlmAgentBase
 from docmancer.models.function_context import FunctionContextModel
@@ -28,6 +29,9 @@ class DefaultGenerator(GeneratorBase):
         return FunctionSummaryModel(
             summary="_summary_",
             return_description="_returns_",
+            return_type="_return_type_",
+            remarks="_remarks_",
+            exceptions=[ExceptionModel(type="_type_", desc="_description_")],
             parameters=[
                 ParameterModel(name="_name_", type="_type_", desc="_description_")
             ],  # TODO: add parameters to FunctionContextModel and use here
@@ -47,6 +51,12 @@ class LlmGenerator(GeneratorBase):
             response = self._agent.send_message(prompt_msg)
         except Exception as e:
             print(f"Generation failed: {e}")
+
+        if not response:
+            print(
+                "No response from LLM. Please ensure configuration parameters are correct."
+            )
+            return None
 
         # Parse response into Function Summary Model
         try:

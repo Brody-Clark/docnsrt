@@ -26,7 +26,10 @@ class Prompt:
         return prompt
 
     def _get_leading_comments_str(self, comments: List[str]) -> str:
-        return ("\n").join(comments)
+        comment = ""
+        if comments:
+            comment = "\n".join(comments)
+        return comment
 
     def _get_expected_json_format(self):
 
@@ -40,6 +43,7 @@ class Prompt:
             return_description="A description of the return value if there is one.",
             remarks="A remark about usage if necessary.",
             exceptions=[ExceptionModel(type="type", desc="description of exception")],
+            return_type="Type of return value",
         )
         return model.to_json(indent=2)
 

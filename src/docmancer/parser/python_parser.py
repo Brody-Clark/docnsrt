@@ -1,6 +1,7 @@
 from typing import List
 import tree_sitter_python as tspython
 from tree_sitter import Language, Parser
+from docmancer.models.parameter_model import ParameterModel
 from docmancer.parser.parser_base import ParserBase
 from docmancer.models.function_context import FunctionContextModel
 
@@ -16,9 +17,23 @@ class PythonParser(ParserBase):
             name: (identifier) @func.name
         )
         """
+    def get_parameters(self, parameters_node, source_code) -> List:
+        parameters = []
+        for child in parameters_node.children:
+            if child.type == "parameter":
+                param_name = self.get_node_text(
+                    child.child_by_field_name("name"), source_code
+                )
+                param_type = self.get_node_text(
+                    child.child_by_field_name("type"), source_code
+                )
+                parameters.append(
+                    ParameterModel(name=param_name, type=param_type, desc="")
+                )
+        return parameters
 
     def extract_function_contexts(
-        self, root_node, source_code: str, module_name
+        self, root_node, source_code: str, module_name: str
     ) -> List[FunctionContextModel]:
         lines = source_code.splitlines()
 
@@ -40,6 +55,11 @@ class PythonParser(ParserBase):
                 block_node = node.child_by_field_name("body")
                 body = self.get_node_text(block_node, source_code=source_code)
 
+                parameters = self.get_parameters(parameters_node, source_code)
+                
+                # Get return type if it is declared
+                return_type = self.get_node_text(node.child_by_field_name("return_type"), source_code=source_code)
+
                 # Gather comments above the function
                 start_line = node.start_point[0]
                 comment_lines = []
@@ -54,6 +74,8 @@ class PythonParser(ParserBase):
 
                 context = FunctionContextModel(
                     qualified_name=qualified_name,
+                    parameters=parameters,
+                    return_type=return_type,
                     signature=signature,
                     body=body,
                     comments="\n".join(comment_lines),

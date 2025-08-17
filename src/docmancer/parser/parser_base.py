@@ -87,7 +87,7 @@ class ParserBase(ABC):
         for name, function_nodes in functions.items():
             for node in function_nodes:
                 function_contexts.append(
-                    self.extract_function_contexts(node, code, name)
+                    self.extract_function_contexts(node, code, name, file_path=file.absolute())
                 )
 
         return function_contexts
@@ -97,6 +97,6 @@ class ParserBase(ABC):
 
     @abstractmethod
     def extract_function_contexts(
-        self, root_node, source_code: str, module_name
+        self, root_node, source_code: str, module_name: str
     ) -> List[FunctionContextModel]:
         pass

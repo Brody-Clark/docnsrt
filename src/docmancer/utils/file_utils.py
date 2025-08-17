@@ -32,11 +32,14 @@ def get_files_by_pattern(
         "src/**/*.py" - all Python files recursively under src/
     """
     matches = []
-    for pattern in include_patterns:
-        found_files = Path(start_dir).glob(pattern=pattern)
+    for include_pattern in include_patterns:
+        found_files = Path(start_dir).glob(pattern=include_pattern)
         for fn in found_files:
             # skip functions that match any ignore patterns
-            if any(fnmatch.fnmatch(str(fn), pattern) for pattern in ignore_patterns):
+            if any(
+                fnmatch.fnmatch(str(fn), ignore_pattern)
+                for ignore_pattern in ignore_patterns
+            ):
                 continue
         matches.append(fn)
 

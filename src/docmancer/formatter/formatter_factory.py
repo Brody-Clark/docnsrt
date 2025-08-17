@@ -1,6 +1,6 @@
 from docmancer.formatter.formatter_base import FormatterBase
 from docmancer.formatter.python_formatters import pythonPepFormatter
-from docmancer.formatter.csharp_formatters import csharpXmlFormatter
+from docmancer.formatter.csharp_formatters import CSharpXmlFormatter
 from docmancer.core.styles import DocstringStyle
 from docmancer.core.languages import Languages
 
@@ -14,6 +14,6 @@ class FormatterFactory:
             if style.lower() == DocstringStyle.PEP.lower():
                 return pythonPepFormatter()
         if language == Languages.CSHARP.value:
-            if style.lower == DocstringStyle.XML.lower():
-                return csharpXmlFormatter()
-        return None
+            if style.lower() == DocstringStyle.XML.lower():
+                return CSharpXmlFormatter()
+        raise ValueError(f"Unsupported style '{style}' for language '{language}'")

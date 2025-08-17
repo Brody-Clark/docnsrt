@@ -8,8 +8,9 @@ from typing import List, Optional
 @dataclass
 class FunctionSummaryModel:
     summary: str
-    return_description: str
+    return_description: Optional[str] = None
     parameters: List[ParameterModel] = field(default_factory=list)
     return_type: Optional[str] = None
     exceptions: Optional[str] = None
     remarks: Optional[str] = None
+

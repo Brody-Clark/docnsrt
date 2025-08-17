@@ -3,7 +3,6 @@ import sys
 from docmancer.core.cli import parse_args
 from docmancer.core.engine import DocumentationBuilderEngine
 from docmancer.generators.documentation_generators import (
-    GeneratorBase,
     DefaultGenerator,
     LlmGenerator,
 )

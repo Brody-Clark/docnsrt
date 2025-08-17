@@ -1,9 +1,8 @@
-import yaml
 import os
-import sys
 from enum import Enum
+from typing import Optional, List
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List
+import yaml
 from dataclasses_json import dataclass_json
 from docmancer.core.styles import DocstringStyle
 
@@ -56,13 +55,13 @@ class LLMConfig:
     def get_mode_enum(self) -> LLMType:
         try:
             return LLMType[self.mode.upper()]
-        except KeyError:
+        except KeyError as key_err:
             raise ValueError(
                 f"Invalid LLM mode '{self.mode}' in config. "
                 f"Must be one of: {', '.join([s.name for s in LLMType])}."
-            )
-        except AttributeError:
-            raise TypeError(f"Mode '{self.mode}' is not a string type.")
+            ) from key_err
+        except AttributeError as attrib_err:
+            raise TypeError(f"Mode '{self.mode}' is not a string type.") from attrib_err
 
 
 @dataclass_json

@@ -1,0 +1,7 @@
+[FORMAT]
+disable=
+    C0301,  # Line too ling 
+    R0902,
+    R0901,
+    E1101,
+    too-few-public-methods
