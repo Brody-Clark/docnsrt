@@ -1,12 +1,18 @@
+"""Parser for Python code."""
+
 from typing import List
 import tree_sitter_python as tspython
 from tree_sitter import Language, Parser
-from docmancer.models.parameter_model import ParameterModel
+from docmancer.models.functional_models import ParameterModel
 from docmancer.parser.parser_base import ParserBase
 from docmancer.models.function_context import FunctionContextModel
 
 
 class PythonParser(ParserBase):
+    """
+    Parser for Python code.
+    """
+
     def __init__(self):
         ParserBase.__init__(self)
         self._language = Language(tspython.language())
@@ -17,7 +23,17 @@ class PythonParser(ParserBase):
             name: (identifier) @func.name
         )
         """
+
     def get_parameters(self, parameters_node, source_code) -> List:
+        """Extracts parameters from a function definition node.
+
+        Args:
+            parameters_node (tree_sitter.Node): The parameters node to extract information from.
+            source_code (str): The source code as a string.
+
+        Returns:
+            List: A list of ParameterModel instances representing the function parameters.
+        """
         parameters = []
         for child in parameters_node.children:
             if child.type == "parameter":
@@ -56,9 +72,12 @@ class PythonParser(ParserBase):
                 body = self.get_node_text(block_node, source_code=source_code)
 
                 parameters = self.get_parameters(parameters_node, source_code)
-                
+
                 # Get return type if it is declared
-                return_type = self.get_node_text(node.child_by_field_name("return_type"), source_code=source_code)
+                return_type = None
+                type_node = node.child_by_field_name("return_type")
+                if type_node:
+                    return_type = self.get_node_text(type_node, source_code=source_code)
 
                 # Gather comments above the function
                 start_line = node.start_point[0]

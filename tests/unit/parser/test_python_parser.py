@@ -35,6 +35,18 @@ def foo(x, y):
     assert ctx.comments == ""
 
 
+def test_extract_function_with_return_type(parser, get_root_node):
+    code = b"""
+def foo(x, y) -> int:
+    return x + y
+"""
+    root_node = get_root_node(code)
+    contexts = parser.extract_function_contexts(root_node, code, "test_module")
+    assert len(contexts) == 1
+    ctx = contexts[0]
+    assert ctx.return_type == "int"
+
+
 def test_extract_function_with_comments(parser, get_root_node):
     code = b"""
 # This is a test function

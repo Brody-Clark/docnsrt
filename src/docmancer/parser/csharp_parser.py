@@ -1,3 +1,5 @@
+"""Parser for the C# language."""
+
 from typing import List
 import tree_sitter_c_sharp as tscsharp
 from tree_sitter import Language, Parser
@@ -69,8 +71,9 @@ class CSharpParser(ParserBase):
         return parameters
 
     def extract_function_contexts(
-        self, root_node, source_code, module_name,
+        self, root_node, source_code, module_name
     ) -> List[FunctionContextModel]:
+
         function_contexts = []
         node_stack = [(root_node, [])]  # (node, scope_stack)
 
@@ -99,7 +102,7 @@ class CSharpParser(ParserBase):
                             self.get_node_text(child_node, source_code=source_code)
                         )
 
-                # If the function had no predefined_type node and has more than one identifer
+                # If the function had no predefined_type node and has more than one identifier,
                 # then the first identifier would be the return type
                 if not return_type and len(identifiers) > 1:
                     return_type = identifiers[0]
@@ -113,22 +116,33 @@ class CSharpParser(ParserBase):
                 modifiers_str = " ".join(modifiers) if modifiers else ""
                 identifiers_str = " ".join(identifiers) if identifiers else ""
                 return_type = f" {return_type} " if return_type is not None else ""
-                parameters_str = self.get_node_text(parameters_node, source_code=source_code)
-                signature = f"{modifiers_str}{return_type}{identifiers_str}{parameters_str}"
+                parameters_str = self.get_node_text(
+                    parameters_node, source_code=source_code
+                )
+                signature = (
+                    f"{modifiers_str}{return_type}{identifiers_str}{parameters_str}"
+                )
                 parameters = self.get_parameters(parameters_node, source_code)
 
                 function_contexts.append(
                     FunctionContextModel(
-                        qualified_name="",
+                        qualified_name=".".join([module_name] + scope + identifiers),
                         signature=signature,
                         body=body,
                         return_type=return_type.strip(),
                         parameters=parameters,
                         comments=comments,
                         start_line=node.range.start_point.row,
-                        end_line=node.range.end_point.row
+                        end_line=node.range.end_point.row,
                     )
                 )
+            elif node.type == "class_declaration":
+                name_node = node.child_by_field_name("name")
+                class_name = self.get_node_text(name_node, source_code=source_code)
+                new_scope = scope + [class_name]
+                for child in reversed(node.children):
+                    node_stack.append((child, new_scope))
+
             else:
                 for child in reversed(node.children):
                     node_stack.append((child, scope))

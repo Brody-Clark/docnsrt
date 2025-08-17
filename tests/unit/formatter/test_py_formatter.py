@@ -1,9 +1,8 @@
 import unittest
-from unittest.mock import patch, MagicMock
-from docmancer.formatter.python_formatters import pythonPepFormatter
+from unittest.mock import patch
+from docmancer.formatter.python_formatters import PythonPepFormatter
 from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
-from docmancer.models.documentation_model import DocumentationModel
 
 
 class TestPepFormatter(unittest.TestCase):
@@ -14,11 +13,13 @@ class TestPepFormatter(unittest.TestCase):
         # mock return 4 spaces (tab)
         mock_get_line_text_offset_spaces.return_value = 4
 
-        formatter = pythonPepFormatter()
+        formatter = PythonPepFormatter()
         test_func_context = FunctionContextModel(
             qualified_name="test.class.func",
             signature="def func()",
             body="" "pass" "",
+            parameters=[],
+            return_type="None",
             start_line=1,
             end_line=3,
             comments=["# this is a test"],
@@ -29,9 +30,9 @@ class TestPepFormatter(unittest.TestCase):
             parameters=[],
         )
         test_doc_model = formatter.get_formatted_documentation(
+            file_path="test_file.py",
             func_context=test_func_context,
             func_summary=test_func_summary,
-            file_path="test\\path",
         )
 
         expected_docstring = [
@@ -44,10 +45,8 @@ class TestPepFormatter(unittest.TestCase):
             '"""\n',
         ]
 
-        assert test_doc_model.file_path == "test\\path"
         assert (
             test_doc_model.offset_spaces == 8
         )  # must be a tab (4) added to existing (provided by mock)
         assert test_doc_model.start_line == 1
-        assert test_doc_model.signature == "def func()"
         assert test_doc_model.formatted_documentation == expected_docstring

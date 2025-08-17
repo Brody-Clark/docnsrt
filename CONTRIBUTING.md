@@ -35,7 +35,7 @@ See the [Poetry installation docs](https://python-poetry.org/docs/#installing-wi
     poetry shell
     ```
 
-## Code Style & Formatting
+## Code Style & Formatting with Black
 
 - This project follows [PEP 8](https://peps.python.org/pep-0008/) style guidelines
 - All code should be formatted using [black](https://github.com/psf/black).
@@ -45,6 +45,46 @@ See the [Poetry installation docs](https://python-poetry.org/docs/#installing-wi
     black .
     ```
 
+## Linting with Pylint
+
+This project uses [Pylint](https://pylint.pycqa.org/) for static code analysis and enforcing code quality.
+
+### Running Pylint
+
+To run Pylint on your codebase, use:
+
+```bash
+poetry run pylint src
+```
+
+- This will lint all files in the `src/` directory.
+- If you want to ignore specific files or folders (e.g., test projects), use the `--ignore-patterns` option:
+
+    ```bash
+    poetry run pylint --ignore-patterns='^tests/test_projects/.*' src
+    ```
+
+### Fixing Lint Issues
+
+- Review the output and fix any reported issues before committing.
+- You can disable specific warnings in your code using comments, e.g.:
+
+    ```python
+    # pylint: disable=too-few-public-methods
+    ```
+
+### Linting Checklist
+
+- Run Pylint before submitting a pull request.
+- Ensure your code passes with minimal warnings.
+- Address any critical errors or code style issues.
+
+**Tip:**  
+Add Pylint as a dev dependency with:
+
+```bash
+poetry add --dev pylint
+```
 ## Docstring Guidelines
 
 This project follows [PEP 257-style](https://peps.python.org/pep-0257/) docstrings with an emphasis on clarity and brevity.

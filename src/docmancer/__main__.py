@@ -1,22 +1,31 @@
+"""
+Main entry point for the Docmancer application.
+"""
+
 import os
 import sys
+from docmancer import config
 from docmancer.core.cli import parse_args
-from docmancer.core.engine import DocumentationBuilderEngine
+from docmancer.core.pipeline import DocumentationPipeline
 from docmancer.generators.documentation_generators import (
     DefaultGenerator,
     LlmGenerator,
+    GeneratorBase,
 )
 from docmancer.generators.llm.llm_agent_factory import LlmFactory
 from docmancer.formatter.formatter_factory import FormatterFactory
 from docmancer.core.presenter import Presenter
-from docmancer.parser.parser_factory import ParserFactory
-from docmancer.config import DocmancerConfig, LLMType
+from docmancer.parser.parser_factory import ParserFactory, ParserBase
+from docmancer.config import DocmancerConfig, LLMType, LLMConfig
 
 
 def main():
+    """
+    Main entry point for the Docmancer application.
+    """
     config: DocmancerConfig = parse_args()
     if not os.path.isdir(config.project_dir):
-        raise Exception("Error: Project directory does not exist.")
+        raise FileNotFoundError("Project directory does not exist.")
 
     try:
 
@@ -75,29 +84,54 @@ def main():
 
     presenter = Presenter()
 
-    if config.no_summary:
-        generator = DefaultGenerator()
-    else:
-        try:
-            agent_factory = LlmFactory()
-            agent = agent_factory.get_agent(llm_config=config.llm_config)
-        except Exception as e:
-            print(e)
-        generator = LlmGenerator(agent=agent)
+    generator = get_generator(config)
 
     formatter_factory = FormatterFactory()
     formatter = formatter_factory.get_formatter(
         style=config.style, language=config.language
     )
 
-    parser_factory = ParserFactory()
-    parser = parser_factory.get_parser(language=config.language)
+    parser = get_parser(language=config.language)
 
-    builder_engine = DocumentationBuilderEngine(
+    documentation_pipeline = DocumentationPipeline(
         generator=generator, formatter=formatter, presenter=presenter, parser=parser
     )
 
-    builder_engine.run(config)
+    documentation_pipeline.run(config)
+
+
+def get_generator(llm_config: LLMConfig) -> GeneratorBase:
+    """Get the appropriate generator based on the configuration.
+
+    Args:
+        config (LLMConfig): The configuration for the LLM agent.
+
+    Returns:
+        GeneratorBase: The appropriate generator for the documentation generation.
+    """
+    if config.no_summary:
+        generator = DefaultGenerator()
+    else:
+        try:
+            agent_factory = LlmFactory()
+            agent = agent_factory.get_agent(llm_config=llm_config)
+        except NotImplementedError as e:
+            print(f"LLM agent not implemented: {e}")
+        generator = LlmGenerator(agent=agent)
+    return generator
+
+
+def get_parser(language: str) -> ParserBase:
+    """Get the appropriate parser based on the language.
+
+    Args:
+        language (str): The programming language for the documentation.
+
+    Returns:
+        ParserBase: The appropriate parser for the specified language.
+    """
+    parser_factory = ParserFactory()
+    return parser_factory.get_parser(language=language)
 
 
 if __name__ == "__main__":

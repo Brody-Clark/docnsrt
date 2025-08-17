@@ -2,10 +2,11 @@ from abc import ABC, abstractmethod
 
 
 class LlmAgentBase(ABC):
+    """Base class for LLM agents."""
 
     @abstractmethod
     def send_message(self, message: str) -> str:
-        """_summary_
+        """Sends a message to the LLM and returns the response.
 
         Args:
             message (str): User prompt used to generate function summary

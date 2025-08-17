@@ -1,19 +1,30 @@
-from docmancer.models.function_context import FunctionContextModel
-from docmancer.models.functional_models import (
-    ParameterModel,
-    ExceptionModel,
-    FunctionSummaryModel,
-)
+"""
+This module contains the prompt class for providing prompts to the LLM summary generator.
+"""
+
 from typing import List
-import yaml
 from pathlib import Path
+import yaml
+from docmancer.models.function_context import FunctionContextModel
+from docmancer.models.function_summary import FunctionSummaryModel
+from docmancer.models.functional_models import ParameterModel, ExceptionModel
 
 
 class Prompt:
+    """LLM Prompt class for generating prompts based on function context."""
+
     def __init__(self):
         self._prompt_template = self._load_prompt_template()
 
     def create(self, context: FunctionContextModel) -> str:
+        """Creates a prompt for the LLM based on the function context.
+
+        Args:
+            context (FunctionContextModel): The context of the function being documented.
+
+        Returns:
+            str: The generated prompt for the LLM.
+        """
         # At runtime, inject values
         prompt = self._prompt_template.format(
             signature=context.signature,
@@ -48,9 +59,8 @@ class Prompt:
         return model.to_json(indent=2)
 
     def _load_prompt_template(self) -> str:
-        # Load config
         try:
-            with open(Path("prompt.yaml")) as f:
+            with open(Path("prompt.yaml"), encoding="utf-8") as f:
                 config = yaml.safe_load(f)
         except FileNotFoundError:
             print("No valid prompt.yaml file found for LLM.")

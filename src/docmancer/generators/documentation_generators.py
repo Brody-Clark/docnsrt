@@ -1,11 +1,12 @@
-from docmancer.models.functional_models import ExceptionModel
+"""This module provides function summary generators"""
+
+from abc import abstractmethod, ABC
+from docmancer.models.functional_models import ExceptionModel, ParameterModel
 import docmancer.utils.json_utils as ju
 from docmancer.generators.llm.llm_agent_base import LlmAgentBase
 from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
-from docmancer.models.parameter_model import ParameterModel
 from docmancer.generators.llm.prompt import Prompt
-from abc import abstractmethod, ABC
 
 
 class GeneratorBase(ABC):
@@ -22,6 +23,11 @@ class GeneratorBase(ABC):
 
 
 class DefaultGenerator(GeneratorBase):
+    """
+    Default implementation of the function summary generator.
+    Provides no summary, only placeholders.
+    """
+
     def __init__(self):
         pass
 
@@ -34,11 +40,15 @@ class DefaultGenerator(GeneratorBase):
             exceptions=[ExceptionModel(type="_type_", desc="_description_")],
             parameters=[
                 ParameterModel(name="_name_", type="_type_", desc="_description_")
-            ],  # TODO: add parameters to FunctionContextModel and use here
+            ],
         )
 
 
 class LlmGenerator(GeneratorBase):
+    """
+    LLM-based implementation of the function summary generator.
+    """
+
     def __init__(self, agent: LlmAgentBase):
         self._agent = agent
         self._prompt = Prompt()
@@ -54,7 +64,7 @@ class LlmGenerator(GeneratorBase):
 
         if not response:
             print(
-                "No response from LLM. Please ensure configuration parameters are correct."
+                "No response from LLM. Please ensure configuration parameters are correct and model is properly initialized."
             )
             return None
 

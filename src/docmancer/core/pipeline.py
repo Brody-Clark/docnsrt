@@ -1,3 +1,7 @@
+"""
+Main processing pipeline for documentation generation
+"""
+
 from typing import List
 from docmancer.parser.parser_base import ParserBase
 from docmancer.generators.documentation_generators import GeneratorBase
@@ -5,10 +9,15 @@ from docmancer.formatter.formatter_base import FormatterBase
 from docmancer.core.presenter import Presenter, UserResponse
 from docmancer.models.documentation_model import DocumentationModel
 from docmancer.config import DocmancerConfig
-import docmancer.utils.file_utils as file_utils
+from docmancer.utils import file_utils
 
 
-class DocumentationBuilderEngine:
+class DocumentationPipeline:
+    """
+    Pipeline for processing documentation generation. Parses source code files,
+    extracts function context, generates documentation, and presents it to the user.
+    """
+
     def __init__(
         self,
         generator: GeneratorBase,
@@ -22,6 +31,9 @@ class DocumentationBuilderEngine:
         self._formatter = formatter
 
     def run(self, settings: DocmancerConfig):
+        """
+        Runs the documentation generation pipeline.
+        """
         errors = []
 
         # Step 1. Parse all files/functions into {file_path: List[FunctionContextModel]} map
@@ -54,6 +66,7 @@ class DocumentationBuilderEngine:
 
                 # Step 3. Convert function summary to formatted summary
                 formatted_summary = self._formatter.get_formatted_documentation(
+                    file_path=file_path,
                     func_context=func_context[0],
                     func_summary=summary,
                 )
@@ -66,39 +79,21 @@ class DocumentationBuilderEngine:
                     formatted_documentation=formatted_summary.formatted_documentation,
                     offset_spaces=formatted_summary.offset_spaces,
                     file_path=file_path,
-                    existing_docstring=func_context[0].comments
+                    existing_docstring=func_context[0].comments,
                 )
-                
+
                 if file_path in doc_model_database:
                     doc_model_database[file_path].append(doc)
                 else:
                     doc_model_database[file_path] = [doc]
 
-
         # Step 5. Present the user with generated docs and get approval if "force-all" is not present
         if not settings.force_all:
-            for file_path, doc_models in doc_model_database.copy().items():
-                approved_docs = []
-                while doc_models:
-                    doc = doc_models.pop()
-                    approval_response = self._presenter.get_user_approval(doc)
-                    if approval_response.response == UserResponse.QUIT:
-                        return
-                    if approval_response.response == UserResponse.SKIP:
-                        continue
-                    if approval_response.response == UserResponse.ACCEPT:
-                        approved_docs.append(doc)
-                doc_model_database[file_path] = approved_docs
+            doc_model_database = self.get_approved_docstrings(doc_model_database)
 
         # Step 6. Write formatted docstrings to files and save
-        for file_path, doc_models in doc_model_database.items():
-            if len(doc_models) > 0:
-                try:
-                    self.commit(file_path=file_path, docs=doc_models)
-                except Exception as e:
-                    errors.append(e)
+        self.write_docstrings(errors, doc_model_database)
 
-        # TODO: Implement better error notification system
         if len(errors) > 0:
             for e in errors:
                 self._presenter.print_error(f"Error: {e}")
@@ -106,11 +101,43 @@ class DocumentationBuilderEngine:
             self._presenter.clear_console()
             self._presenter.print_success("Documentation Generation Complete")
 
+    def write_docstrings(self, errors, doc_model_database):
+        """
+        Writes the generated docstrings to the appropriate files.
+        """
+        for file_path, doc_models in doc_model_database.items():
+            if len(doc_models) > 0:
+                try:
+                    self.commit(file_path=file_path, docs=doc_models)
+                except Exception as e:
+                    errors.append(e)
+
+    def get_approved_docstrings(self, doc_model_database):
+        """
+        Gets user approval for the generated docstrings.
+        """
+        for file_path, doc_models in doc_model_database.copy().items():
+            approved_docs = []
+            while doc_models:
+                doc = doc_models.pop()
+                approval_response = self._presenter.get_user_approval(doc)
+                if approval_response.response == UserResponse.QUIT:
+                    return None
+                if approval_response.response == UserResponse.SKIP:
+                    continue
+                if approval_response.response == UserResponse.ACCEPT:
+                    approved_docs.append(doc)
+            doc_model_database[file_path] = approved_docs
+        return doc_model_database
+
     def commit(self, file_path: str, docs: List[DocumentationModel]):
+        """
+        Commits the generated documentation to the specified file.
+        """
 
         # Sort docs by start_line and write to files
         # Read the file into memory
-        with open(file_path, "r") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
 
         # Sort insertions by line number (ascending)
@@ -123,12 +150,10 @@ class DocumentationBuilderEngine:
                 " " * doc.offset_spaces + doc_line
                 for doc_line in doc.formatted_documentation
             ]
-            lines[adjusted_line:adjusted_line] = [
-                line for line in indented_documentation
-            ]
+            lines[adjusted_line:adjusted_line] = list(indented_documentation)
 
             offset += len(doc.formatted_documentation)
 
         # Write modified lines back to file
-        with open(file_path, "w") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.writelines(lines)

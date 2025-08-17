@@ -1,3 +1,7 @@
+"""
+Model for function context information.
+"""
+
 from dataclasses import dataclass
 from typing import List
 from docmancer.models.functional_models import ParameterModel
@@ -5,6 +9,8 @@ from docmancer.models.functional_models import ParameterModel
 
 @dataclass
 class FunctionContextModel:
+    """Model for function context information."""
+
     qualified_name: str
     signature: str
     return_type: str

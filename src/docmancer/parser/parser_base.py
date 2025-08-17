@@ -1,3 +1,5 @@
+"""Base class for all parsers."""
+
 from abc import ABC, abstractmethod
 from typing import List
 import os
@@ -7,17 +9,34 @@ from docmancer.models.function_context import FunctionContextModel
 
 
 class ParserBase(ABC):
+    """
+    Base class for all parsers.
+    """
+
     def __init__(self):
         self._language = None
         self._parser = None
         self._query_str = None
 
     def get_function_nodes(self, tree):
+        """
+        Retrieves function nodes from the parse tree.
+        """
         query = self._language.query(self._query_str)
         captures = query.captures(tree.root_node)
         return captures
 
     def get_function_names(self, captures, source_code: bytes) -> dict:
+        """Retrieves function names from the capture groups.
+
+        Args:
+            captures (_type_): _description_
+            source_code (bytes): _description_
+
+        Returns:
+            dict: _description_
+        """
+
         func_nodes = {}
         for capture_name in captures:
             if capture_name == "func.name":
@@ -69,6 +88,16 @@ class ParserBase(ABC):
     def parse(
         self, file: str, include_patterns: List[str], ignore_patterns: List[str]
     ) -> List[FunctionContextModel]:
+        """Parses a file and extracts function contexts.
+
+        Args:
+            file (str): The path to the file to parse.
+            include_patterns (List[str]): Patterns to include.
+            ignore_patterns (List[str]): Patterns to ignore.
+
+        Returns:
+            List[FunctionContextModel]: A list of function contexts.
+        """
         try:
             code = fu.read_file_to_bytes(file.absolute())
             module_name = os.path.splitext(os.path.basename(file.absolute()))[0]
@@ -87,16 +116,34 @@ class ParserBase(ABC):
         for name, function_nodes in functions.items():
             for node in function_nodes:
                 function_contexts.append(
-                    self.extract_function_contexts(node, code, name, file_path=file.absolute())
+                    self.extract_function_contexts(node, code, name)
                 )
 
         return function_contexts
 
     def get_node_text(self, node, source_code) -> str:
+        """Retrieves the text content of a node from the source code.
+
+        Args:
+            node (tree_sitter.Node): The node to retrieve text from.
+            source_code (bytes): The raw source code as bytes.
+
+        Returns:
+            str: The text content of the node.
+        """
         return source_code[node.start_byte : node.end_byte].decode("utf-8")
 
     @abstractmethod
     def extract_function_contexts(
         self, root_node, source_code: str, module_name: str
     ) -> List[FunctionContextModel]:
-        pass
+        """Extracts function contexts from a root node.
+
+        Args:
+            root_node (tree_sitter.Node): tree sitter root node
+            source_code (str): raw source code
+            module_name (str): name of the module the code belongs to
+
+        Returns:
+            List[FunctionContextModel]: A list of function contexts.
+        """

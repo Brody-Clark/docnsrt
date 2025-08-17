@@ -1,9 +1,15 @@
+"""Local LLM agent for inference using LlamaCpp."""
+
 from llama_cpp import Llama
 from docmancer.generators.llm.llm_agent_base import LlmAgentBase
 from docmancer.config import LocalLLMSettings
 
 
 class LlamaCppAgent(LlmAgentBase):
+    """
+    LLM-based agent for local inference using LlamaCpp.
+    """
+
     def __init__(self, settings: LocalLLMSettings):
         self._settings = settings
 

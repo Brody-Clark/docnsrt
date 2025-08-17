@@ -1,3 +1,5 @@
+"""Supported docstring formats."""
+
 from typing import Dict, List, Any
 from enum import Enum
 
@@ -16,6 +18,9 @@ class DocstringStyle(Enum):
     XML = "xml"
 
     def lower(self) -> str:
+        """
+        Returns the lowercase representation of the style name.
+        """
         return self.value.lower()
 
 

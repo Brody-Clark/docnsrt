@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 from docmancer.generators.llm.prompt import Prompt
 from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
+from docmancer.models.functional_models import ParameterModel
 
 
 @pytest.fixture
@@ -23,12 +24,17 @@ def mock_context():
         signature="def func(x, y):",
         body="    return x + y",
         start_line=1,
+        parameters=[
+            ParameterModel(name="x", type="int", desc="first number"),
+            ParameterModel(name="y", type="int", desc="second number"),
+        ],
+        return_type="int",
         end_line=3,
         comments=["# comment1", "# comment2"],
     )
 
 
-@patch("docmancer.generators.prompts.Prompt._load_prompt_template")
+@patch("docmancer.generators.llm.prompt.Prompt._load_prompt_template")
 def test_create_prompt_injects_values(
     mock_load_template: MagicMock,
     mock_prompt_template: MagicMock,
@@ -44,24 +50,24 @@ def test_create_prompt_injects_values(
     assert "summary" in result  # from expected_json_format
 
 
-@patch("docmancer.generators.prompts.Prompt._load_prompt_template")
+@patch("docmancer.generators.llm.prompt.Prompt._load_prompt_template")
 def test_get_leading_comments_str_joins_lines(
     mock_load_template: MagicMock, mock_prompt_template: MagicMock
 ):
     mock_load_template.return_value = mock_prompt_template
     prompt = Prompt()
     comments = ["# first", "# second"]
-    result = prompt.get_leading_comments_str(comments)
+    result = prompt._get_leading_comments_str(comments)
     assert result == "# first\n# second"
 
 
-@patch("docmancer.generators.prompts.Prompt._load_prompt_template")
+@patch("docmancer.generators.llm.prompt.Prompt._load_prompt_template")
 def test_get_expected_json_format_returns_json(
     mock_load_template: MagicMock, mock_prompt_template: MagicMock
 ):
     mock_load_template.return_value = mock_prompt_template
     prompt = Prompt()
-    json_str = prompt.get_expected_json_format()
+    json_str = prompt._get_expected_json_format()
     assert "summary" in json_str
     assert "parameters" in json_str
     assert "return_description" in json_str

@@ -1,10 +1,10 @@
-name: Python CI
+name: Lint and Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ dev ]
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'  # or your required version
+        python-version: '3.11'
 
     - name: Install Poetry
       uses: abatilo/actions-poetry@v3

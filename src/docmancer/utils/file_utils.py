@@ -1,3 +1,5 @@
+"""Utilities for file operations."""
+
 import os
 from pathlib import Path
 from typing import List
@@ -41,7 +43,7 @@ def get_files_by_pattern(
                 for ignore_pattern in ignore_patterns
             ):
                 continue
-        matches.append(fn)
+            matches.append(fn)
 
     return matches
 
@@ -63,13 +65,13 @@ def get_line_text_offset_spaces(file_path: str, line: int) -> int:
 
 
 def read_file_to_string(file_path):
-    """_summary_
+    """Returns content of a file as a string.
 
     Args:
-        file_path (_type_): _description_
+        file_path (str): path to file
 
     Returns:
-        _type_: _description_
+        str: content of file as string
     """
     with open(file_path, "r", encoding="utf8") as file:
         file_content = file.read()
@@ -77,7 +79,7 @@ def read_file_to_string(file_path):
 
 
 def read_file_to_bytes(file_path):
-    """_summary_
+    """Returns content of a file as bytes.
 
     Args:
         file_path (file_path): path to file

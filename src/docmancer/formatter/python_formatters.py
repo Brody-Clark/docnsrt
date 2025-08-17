@@ -1,3 +1,5 @@
+"""Formatters for Python code."""
+
 from docmancer.models.formatted_summary_model import FormattedSummaryModel
 from docmancer.formatter.formatter_base import FormatterBase
 from docmancer.models.function_context import FunctionContextModel
@@ -7,16 +9,21 @@ import docmancer.utils.file_utils as fu
 
 INDENT_SPACES = 4
 
-class pythonPepFormatter(FormatterBase):
+
+class PythonPepFormatter(FormatterBase):
+    """
+    Formats Python docstrings according to PEP 257.
+    """
 
     def get_formatted_documentation(
         self,
+        file_path: str,
         func_context: FunctionContextModel,
-        func_summary: FunctionSummaryModel
+        func_summary: FunctionSummaryModel,
     ) -> FormattedSummaryModel:
 
         function_signature_offset = fu.get_line_text_offset_spaces(
-            func_context.file_path, func_context.start_line
+            file_path, func_context.start_line
         )
 
         lines = ['"""', func_summary.summary.strip(), ""]

@@ -18,11 +18,11 @@
 # Save this file after editing. Docmancer will use your custom prompt for all LLM requests.
 
 prompt_template: |
-  Function Signature: {signature}
-  Preceding Comments: {preceding_comments}
   Qualified Name: {qualified_name}
-  Function Body:
+  Preceding Comments: {preceding_comments}
+  Source Code: 
   `
+  {signature}
   {body}
   `
   
@@ -32,6 +32,6 @@ prompt_template: |
   - Describe what each parameter means in the context of the function if they exist. Ignore parameters if there are none.
   - Omit details if the code is not clear enough to draw conclusions from. Do not rely entirely on function or variable names since they may be misleading.
   - Describe the return value if it has one.
-  - Optionally describe any exceptions the function raises.
-  - Do not write an introduction or summary. Respond with only valid JSON and make sure it follows this format:
+  - Describe each exception the function raises. Ignore exceptions if there are none.
+  - Do not write a preamble, introduction, summary, or follow-up. Respond with only valid JSON and make sure it follows this format:
   {expected_json_format}

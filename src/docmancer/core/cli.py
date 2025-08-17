@@ -1,3 +1,5 @@
+"""CLI for Docmancer - a documentation generation tool."""
+
 from pathlib import Path
 import argparse
 import os
@@ -12,8 +14,19 @@ from docmancer.core.languages import CANONICAL_LANGUAGE_NAMES
 
 
 def load_config(config_path: str) -> dict:
-    """
-    Loads and parses a YAML configuration file.
+    """Loads and parses a YAML configuration file.
+
+    Args:
+        config_path (str): The path to the configuration file.
+
+    Raises:
+        FileNotFoundError: If the configuration file is not found.
+        ValueError: If the configuration file is not a valid YAML file.
+        ValueError: If the configuration file is missing required fields.
+        RuntimeError: If an unexpected error occurs while loading the configuration.
+
+    Returns:
+        dict: The loaded configuration as a dictionary.
     """
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Configuration file not found: {config_path}")
@@ -21,15 +34,17 @@ def load_config(config_path: str) -> dict:
         raise ValueError(f"Provided path is not a file: {config_path}")
 
     try:
-        with open(config_path, "r") as f:
+        with open(config_path, "r", encoding="utf-8") as f:
             config = yaml.load(f, Loader=EnvVarLoader)
         return config
     except yaml.YAMLError as e:
-        raise ValueError(f"Error parsing YAML configuration file '{config_path}': {e}")
+        raise ValueError(
+            f"Error parsing YAML configuration file '{config_path}': {e}"
+        ) from e
     except Exception as e:
         raise RuntimeError(
             f"An unexpected error occurred while loading config '{config_path}': {e}"
-        )
+        ) from e
 
 
 def validate_style_case_insensitive(style_string: str) -> str:
@@ -42,7 +57,6 @@ def validate_style_case_insensitive(style_string: str) -> str:
     if lower_style_input in LOWERCASE_STYLE_NAMES:
         # Find the original, correctly cased style name from STYLE_DEFINITIONS keys
         # by looking up its lowercase version.
-        # This assumes unique lowercase versions, which they should be if canonical names are unique.
         return next(
             (
                 name
@@ -51,12 +65,13 @@ def validate_style_case_insensitive(style_string: str) -> str:
             ),
             None,
         )
-    else:
-        raise argparse.ArgumentTypeError(
-            f"Invalid style '{style_string}'. "
-            f"Allowed styles are: {', '.join(CANONICAL_STYLE_NAMES)} (case-insensitive). "
-            f"Default: {DEFAULT_STYLE_NAME}"
-        )
+
+    # Raise error if style is not found
+    raise argparse.ArgumentTypeError(
+        f"Invalid style '{style_string}'. "
+        f"Allowed styles are: {', '.join(CANONICAL_STYLE_NAMES)} (case-insensitive). "
+        f"Default: {DEFAULT_STYLE_NAME}"
+    )
 
 
 def find_and_load_config(
@@ -93,12 +108,23 @@ def find_and_load_config(
 
 
 def get_default(config, arg_name, fallback=None):
+    """Gets the default value for a configuration argument.
+
+    Args:
+        config (dict): The configuration dictionary.
+        arg_name (str): The name of the argument to retrieve.
+        fallback (Any, optional): A fallback value to return if the argument is not found. Defaults to None.
+
+    Returns:
+        Any: The default value for the argument, or the fallback value if not found.
+    """
     return config.get(
         arg_name.replace("-", "_"), fallback
     )  # Config keys are snake_case
 
 
 def parse_args() -> DocmancerConfig:
+    """Parses command line arguments and returns a DocmancerConfig object."""
 
     parser = argparse.ArgumentParser(
         description="Generate documentation from source code.",
@@ -222,24 +248,32 @@ def parse_args() -> DocmancerConfig:
     # Dictionary representation of defaults
     config = DocmancerConfig().to_dict()
 
-    if (
-        app_config["config"] != ".docmancer.yaml"
-    ):  # If user explicitly provided a config path
-        try:
-            user_config = load_config(Path(args.config))
-        except Exception as e:
-            print("Invalid config path.")
-            raise
-
-        if user_config:
-            # Merge explicit config over everything else
-            config.update(user_config)
-            config_path = args.config
-    else:
+    if app_config["config"] == ".docmancer.yaml":
         # Load configuration first to use its values as defaults
         # We start searching from the current working directory where the CLI is run.
         config_path, user_config = find_and_load_config(Path.cwd())
         config.update(user_config)
+    else:
+        # If user explicitly provided a config path
+        try:
+            user_config = load_config(Path(args.config))
+        except FileNotFoundError as e:
+            print(f"Configuration file not found: {e}")
+            return None
+        except ValueError as e:
+            print(f"Error parsing configuration file '{args.config}': {e}")
+            return None
+        except RuntimeError as e:
+            print(f"An unexpected error occurred while loading config: {e}")
+            return None
+
+        if not user_config:
+            print(f"Configuration file '{args.config}' is empty.")
+            return None
+
+        # Merge explicit config over everything else
+        config.update(user_config)
+        config_path = args.config
 
     # Post-processing for boolean flags if we want config to override default.
     # For flags using action='store_true', their default is False.

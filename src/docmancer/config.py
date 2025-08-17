@@ -1,3 +1,5 @@
+"""Configuration settings for Docmancer."""
+
 import os
 from enum import Enum
 from typing import Optional, List
@@ -8,6 +10,8 @@ from docmancer.core.styles import DocstringStyle
 
 
 class LLMType(Enum):
+    """Enumeration of LLM types."""
+
     LOCAL = "LOCAL"
     REMOTE_API = "REMOTE_API"
 
@@ -53,6 +57,9 @@ class LLMConfig:
     remote_api: Optional[RemoteApiLLMSettings] = None
 
     def get_mode_enum(self) -> LLMType:
+        """
+        Returns the LLMType enum corresponding to the current mode.
+        """
         try:
             return LLMType[self.mode.upper()]
         except KeyError as key_err:
@@ -83,15 +90,16 @@ class DocmancerConfig:
     force_all: bool = False
 
     def get_default_style_enum(self) -> DocstringStyle:
+        """Returns the default docstring style enum."""
         try:
             for style_enum_member in DocstringStyle:
                 if style_enum_member.value.lower() == self.default_style.lower():
                     return style_enum_member
             raise ValueError(f"Invalid default_style '{self.default_style}' in config.")
-        except AttributeError:
+        except AttributeError as exc:
             raise TypeError(
                 f"default_style '{self.default_style}' is not a string type."
-            )
+            ) from exc
 
 
 class EnvVarLoader(yaml.SafeLoader):
@@ -122,12 +130,11 @@ def construct_env_var(loader, node):
         if default_value is not None:
             # If default is provided, use it
             return default_value
-        else:
-            # If no default and env var is missing, raise an error
-            raise ValueError(
-                f"Environment variable '{env_var_name}' is not set "
-                f"and no default value was provided for '!ENV {value}' in config."
-            )
+        # If no default and env var is missing, raise an error
+        raise ValueError(
+            f"Environment variable '{env_var_name}' is not set "
+            f"and no default value was provided for '!ENV {value}' in config."
+        )
     return env_val
 
 

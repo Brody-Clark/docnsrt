@@ -1,3 +1,5 @@
+"""This module contains functions to display text to the CLI."""
+
 from enum import Enum
 import os
 import io
@@ -10,13 +12,18 @@ import platform
 from dataclasses import dataclass
 from rich.console import Console
 from rich.rule import Rule
-from rich.spinner import Spinner
+
+# from rich.spinner import Spinner
 from prompt_toolkit.styles import Style
 from prompt_toolkit.shortcuts import prompt
 from docmancer.models.documentation_model import DocumentationModel
 
 
 class UserResponse(Enum):
+    """
+    Enumeration for user responses.
+    """
+
     QUIT = 1
     ACCEPT = 2
     EDIT = 3
@@ -38,6 +45,10 @@ QUIT = USER_RESPONSES[UserResponse.QUIT]
 
 @dataclass
 class UserResponseModel:
+    """
+    Model for user responses.
+    """
+
     doc_model: DocumentationModel
     response: UserResponse
 
@@ -57,11 +68,15 @@ blue_background_style = Style.from_dict(
 
 
 class Presenter:
+    """Presenter class for user interaction and displaying information."""
 
     def __init__(self):
         self._console = Console()
 
     def get_user_approval(self, doc: DocumentationModel) -> UserResponseModel:
+        """
+        Gets user approval for the generated documentation.
+        """
         while True:
             response = self.interact(doc)
             if response == USER_RESPONSES[UserResponse.QUIT]:
@@ -80,6 +95,9 @@ class Presenter:
                 continue
 
     def edit_text_with_editor(self, initial_text: List[str]) -> str:
+        """
+        Opens the default text editor with the initial text for editing.
+        """
         editor = self.get_default_editor()
         with tempfile.NamedTemporaryFile(suffix=".tmp", mode="w+", delete=False) as tf:
             tf.writelines(initial_text)
@@ -88,10 +106,13 @@ class Presenter:
 
         subprocess.call([editor, file_path])
 
-        with open(file_path, "r") as tf:
+        with open(file_path, "r", encoding="utf-8") as tf:
             return tf.readlines()
 
     def get_default_editor(self):
+        """
+        Returns the default text editor for the current platform.
+        """
         if platform.system() == "Windows":
             return os.environ.get("EDITOR", "notepad")
         return os.environ.get("EDITOR", "nano")
@@ -109,6 +130,18 @@ class Presenter:
     def decorate_slow_task_synchronous(
         self, task_description: str, slow_task: Callable[..., Any], *args, **kwargs
     ) -> Any:
+        """Decorates a slow task with a spinner.
+
+        Args:
+            task_description (str): Description of the task being performed.
+            slow_task (Callable[..., Any]): The slow task to be executed.
+
+        Raises:
+            RuntimeError: If the slow task fails.
+
+        Returns:
+            Any: The result of the slow task.
+        """
         spinner_name = "star"
         result_container = {"result": None, "exception": None}
 
@@ -153,9 +186,9 @@ class Presenter:
         # After the thread finishes, retrieve the result or re-raise the exception
         if result_container["exception"]:
             self.print_error(f"Task failed: {result_container['exception']}")
-            raise Exception(result_container["exception"])
-        else:
-            return result_container["result"]
+            raise RuntimeError(result_container["exception"])
+
+        return result_container["result"]
 
     async def magic_spinner_async(
         self,
@@ -195,6 +228,9 @@ class Presenter:
         return answer
 
     def interact(self, doc: DocumentationModel):
+        """
+        Interacts with the user to accept, edit, skip, or quit the documentation generation.
+        """
         self._console.clear()
         self._console.print(Rule(style="grey69", title="Source"))
         self._console.print(
@@ -220,4 +256,7 @@ class Presenter:
         return result.strip().lower()
 
     def clear_console(self):
+        """
+        Clears the console output.
+        """
         self._console.clear()

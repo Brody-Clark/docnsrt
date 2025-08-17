@@ -1,7 +1,8 @@
+"""Formatters for C# docstrings."""
+
 import docmancer.utils.file_utils as fu
 from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
-from docmancer.models.documentation_model import DocumentationModel
 from docmancer.formatter.formatter_base import FormatterBase
 from docmancer.models.formatted_summary_model import FormattedSummaryModel
 
@@ -9,14 +10,16 @@ COMMENT_START = "/// "
 
 
 class CSharpXmlFormatter(FormatterBase):
+    """Formatter for C# XML documentation comments."""
 
     def get_formatted_documentation(
         self,
+        file_path: str,
         func_context: FunctionContextModel,
-        func_summary: FunctionSummaryModel
+        func_summary: FunctionSummaryModel,
     ) -> FormattedSummaryModel:
         function_signature_offset = fu.get_line_text_offset_spaces(
-            func_context.file_path, func_context.start_line
+            file_path, func_context.start_line
         )
 
         lines = [
@@ -43,13 +46,13 @@ class CSharpXmlFormatter(FormatterBase):
             offset = function_signature_offset
         else:
             raise ValueError(
-                f"Unable to read start line {func_context.start_line} from file {func_context.file_path}"
+                f"Unable to read start line {func_context.start_line} from file {file_path}"
             )
 
-        doc_model = FormattedSummaryModel(
+        formatted_summary = FormattedSummaryModel(
             formatted_documentation=lines,
             start_line=func_context.start_line - 1,
             offset_spaces=offset,
         )
 
-        return doc_model
+        return formatted_summary
