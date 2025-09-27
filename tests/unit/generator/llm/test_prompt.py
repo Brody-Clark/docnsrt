@@ -2,8 +2,8 @@ import pytest
 from unittest.mock import patch, MagicMock
 from docmancer.generators.llm.prompt import Prompt
 from docmancer.models.function_context import FunctionContextModel
+from docmancer.models.functional_models import ParameterModel, DocstringModel
 from docmancer.models.function_summary import FunctionSummaryModel
-from docmancer.models.functional_models import ParameterModel
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ def mock_context():
         ],
         return_type="int",
         end_line=3,
-        comments=["# comment1", "# comment2"],
+        docstring=DocstringModel(lines=["# comment1", "# comment2"], start_line=0),
     )
 
 

@@ -1,5 +1,36 @@
 # Contributing
 
+## Table of Contents
+
+- [Contributing](#contributing)
+  - [Table of Contents](#table-of-contents)
+  - [Getting Started](#getting-started)
+    - [Installing Poetry](#installing-poetry)
+    - [Setting up Environment](#setting-up-environment)
+  - [Code Style \& Formatting with Black](#code-style--formatting-with-black)
+  - [Linting with Pylint](#linting-with-pylint)
+    - [Running Pylint](#running-pylint)
+    - [Fixing Lint Issues](#fixing-lint-issues)
+    - [Linting Checklist](#linting-checklist)
+  - [VS Code Setup](#vs-code-setup)
+    - [Debugging](#debugging)
+    - [Testing](#testing)
+    - [Recommended Extensions](#recommended-extensions)
+  - [Docstring Guidelines](#docstring-guidelines)
+    - [Where to Add Docstrings](#where-to-add-docstrings)
+    - [Format Example](#format-example)
+  - [Unit Testing](#unit-testing)
+    - [Test Directory Structure](#test-directory-structure)
+    - [Writing a Test](#writing-a-test)
+    - [Running Tests](#running-tests)
+    - [Test Checklist](#test-checklist)
+  - [Before you Commit](#before-you-commit)
+  - [Branching Strategy](#branching-strategy)
+    - [Creating a Feature Branch](#creating-a-feature-branch)
+    - [Working on Your Branch](#working-on-your-branch)
+    - [Submitting a Pull Request](#submitting-a-pull-request)
+    - [Merging](#merging)
+
 ## Getting Started
 
 ### Installing Poetry
@@ -85,6 +116,32 @@ Add Pylint as a dev dependency with:
 ```bash
 poetry add --dev pylint
 ```
+
+## VS Code Setup
+
+This project includes recommended VS Code configurations for debugging and testing.
+
+### Debugging
+
+- Use the provided launch configurations in `.vscode/launch.json` to debug:
+  - Test project files
+  - Individual unit test files with pytest
+  - Any file with the Poetry environment
+
+To start debugging, open the Run & Debug sidebar and select the desired configuration.
+
+### Testing
+
+- Tests are discovered and run using pytest, as configured in `.vscode/settings.json`.
+- You can run and debug tests from the Testing sidebar or using the "Debug: pytest Current File" launch configuration.
+
+### Recommended Extensions
+
+- Python
+- Pylint
+- Black
+- pytest
+
 ## Docstring Guidelines
 
 This project follows [PEP 257-style](https://peps.python.org/pep-0257/) docstrings with an emphasis on clarity and brevity.

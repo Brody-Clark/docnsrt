@@ -3,6 +3,7 @@ from unittest.mock import patch
 from docmancer.formatter.python_formatters import PythonPepFormatter
 from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
+from docmancer.models.functional_models import DocstringModel
 
 
 class TestPepFormatter(unittest.TestCase):
@@ -22,7 +23,7 @@ class TestPepFormatter(unittest.TestCase):
             return_type="None",
             start_line=1,
             end_line=3,
-            comments=["# this is a test"],
+            docstring=DocstringModel(lines=[], start_line=2)
         )
         test_func_summary = FunctionSummaryModel(
             summary="this is a test function",
@@ -48,5 +49,5 @@ class TestPepFormatter(unittest.TestCase):
         assert (
             test_doc_model.offset_spaces == 8
         )  # must be a tab (4) added to existing (provided by mock)
-        assert test_doc_model.start_line == 1
+        assert test_doc_model.start_line == 2 # pep docstrings go right below the signature
         assert test_doc_model.formatted_documentation == expected_docstring

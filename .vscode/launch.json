@@ -23,7 +23,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/src/docmancer/__main__.py",
             "args": [
-                "--write"
+                "--write",
+                "--no-summary"
             ],
             "cwd": "${workspaceFolder}/tests/test_projects/python",
             "console": "integratedTerminal",

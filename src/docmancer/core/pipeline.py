@@ -3,11 +3,13 @@ Main processing pipeline for documentation generation
 """
 
 from typing import List
+from docmancer.models.functional_models import DocstringModel
 from docmancer.parser.parser_base import ParserBase
 from docmancer.generators.documentation_generators import GeneratorBase
 from docmancer.formatter.formatter_base import FormatterBase
 from docmancer.core.presenter import Presenter, UserResponse
 from docmancer.models.documentation_model import DocumentationModel
+from docmancer.models.docstring_models import DocstringLocation
 from docmancer.config import DocmancerConfig
 from docmancer.utils import file_utils
 
@@ -73,13 +75,16 @@ class DocumentationPipeline:
 
                 # Step 4. Create documentation model database from function context and formatted summary
                 doc = DocumentationModel(
-                    start_line=formatted_summary.start_line,
+                    new_docstring=DocstringModel(
+                        lines=formatted_summary.formatted_documentation,
+                        start_line=formatted_summary.start_line,
+                    ),
                     qualified_name=func_context[0].qualified_name,
                     signature=func_context[0].signature,
-                    formatted_documentation=formatted_summary.formatted_documentation,
                     offset_spaces=formatted_summary.offset_spaces,
                     file_path=file_path,
-                    existing_docstring=func_context[0].comments,
+                    existing_docstring=func_context[0].docstring,
+                    docstring_location=formatted_summary.docstring_location,
                 )
 
                 if file_path in doc_model_database:
@@ -91,8 +96,9 @@ class DocumentationPipeline:
         if not settings.force_all:
             doc_model_database = self.get_approved_docstrings(doc_model_database)
 
-        # Step 6. Write formatted docstrings to files and save
-        self.write_docstrings(errors, doc_model_database)
+        if doc_model_database:
+            # Step 6. Write formatted docstrings to files and save
+            self.write_docstrings(errors, doc_model_database)
 
         if len(errors) > 0:
             for e in errors:
@@ -141,18 +147,34 @@ class DocumentationPipeline:
             lines = f.readlines()
 
         # Sort insertions by line number (ascending)
-        docs.sort(key=lambda x: x.start_line)
+        docs.sort(key=lambda x: x.new_docstring.start_line)
 
         offset = 0
         for doc in docs:
-            adjusted_line = doc.start_line + offset
+
+            adjusted_line = doc.new_docstring.start_line + offset
+
+            # Remove existing docstring if there is one
+            removed_lines = 0
+            if doc.existing_docstring:
+                start_line = doc.existing_docstring.start_line + offset
+                end_line = start_line + len(doc.existing_docstring.lines)
+                del lines[start_line:end_line]
+                removed_lines = len(doc.existing_docstring.lines)
+                
+            # Write the docstring to the appropriate location
             indented_documentation = [
                 " " * doc.offset_spaces + doc_line
-                for doc_line in doc.formatted_documentation
+                for doc_line in doc.new_docstring.lines
             ]
+            
+            # If docstring is above the function, adjust the line to insert at if lines were removed
+            if doc.docstring_location == DocstringLocation.ABOVE:
+                adjusted_line = max(0, adjusted_line - removed_lines)
+            
             lines[adjusted_line:adjusted_line] = list(indented_documentation)
 
-            offset += len(doc.formatted_documentation)
+            offset += len(doc.new_docstring.lines) - removed_lines
 
         # Write modified lines back to file
         with open(file_path, "w", encoding="utf-8") as f:

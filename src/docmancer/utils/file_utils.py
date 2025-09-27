@@ -33,19 +33,16 @@ def get_files_by_pattern(
         "*.py" - all Python files in current dir
         "src/**/*.py" - all Python files recursively under src/
     """
-    matches = []
-    for include_pattern in include_patterns:
-        found_files = Path(start_dir).glob(pattern=include_pattern)
-        for fn in found_files:
-            # skip functions that match any ignore patterns
-            if any(
-                fnmatch.fnmatch(str(fn), ignore_pattern)
-                for ignore_pattern in ignore_patterns
-            ):
-                continue
-            matches.append(fn)
+    start = Path(start_dir)
+    matches = set()
 
-    return matches
+    for include_pattern in include_patterns:
+        for fn in start.glob(include_pattern):
+            if any(fn.match(ignore_pattern) for ignore_pattern in ignore_patterns):
+                continue
+            matches.add(fn)
+
+    return sorted(matches)
 
 
 def get_line_text_offset_spaces(file_path: str, line: int) -> int:
@@ -58,7 +55,7 @@ def get_line_text_offset_spaces(file_path: str, line: int) -> int:
 
     """
     with open(file_path, "r", encoding="utf8") as f:
-        for idx, line_text in enumerate(f, start=1):
+        for idx, line_text in enumerate(f, start=0):
             if idx == line:
                 return len(line_text) - len(line_text.lstrip(" "))
     return -1

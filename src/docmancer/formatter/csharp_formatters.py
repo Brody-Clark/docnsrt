@@ -1,5 +1,6 @@
 """Formatters for C# docstrings."""
 
+from docmancer.models.docstring_models import DocstringLocation
 import docmancer.utils.file_utils as fu
 from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
@@ -51,8 +52,9 @@ class CSharpXmlFormatter(FormatterBase):
 
         formatted_summary = FormattedSummaryModel(
             formatted_documentation=lines,
-            start_line=func_context.start_line - 1,
+            start_line=func_context.start_line,  # XML comments go right above the signature
             offset_spaces=offset,
+            docstring_location=DocstringLocation.ABOVE,
         )
 
         return formatted_summary

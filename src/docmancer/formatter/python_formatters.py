@@ -4,6 +4,7 @@ from docmancer.models.formatted_summary_model import FormattedSummaryModel
 from docmancer.formatter.formatter_base import FormatterBase
 from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
+from docmancer.models.docstring_models import DocstringLocation
 
 import docmancer.utils.file_utils as fu
 
@@ -55,8 +56,9 @@ class PythonPepFormatter(FormatterBase):
 
         doc_model = FormattedSummaryModel(
             formatted_documentation=lines,
-            start_line=func_context.start_line,  # pep doc strings go right below the signature
+            start_line=func_context.start_line + 1,  # pep doc strings go right below the signature
             offset_spaces=offset,
+            docstring_location=DocstringLocation.BELOW,
         )
 
         return doc_model

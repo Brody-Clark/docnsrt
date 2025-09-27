@@ -4,7 +4,6 @@ Main entry point for the Docmancer application.
 
 import os
 import sys
-from docmancer import config
 from docmancer.core.cli import parse_args
 from docmancer.core.pipeline import DocumentationPipeline
 from docmancer.generators.documentation_generators import (
@@ -16,7 +15,7 @@ from docmancer.generators.llm.llm_agent_factory import LlmFactory
 from docmancer.formatter.formatter_factory import FormatterFactory
 from docmancer.core.presenter import Presenter
 from docmancer.parser.parser_factory import ParserFactory, ParserBase
-from docmancer.config import DocmancerConfig, LLMType, LLMConfig
+from docmancer.config import DocmancerConfig, LLMType
 
 
 def main():
@@ -100,11 +99,11 @@ def main():
     documentation_pipeline.run(config)
 
 
-def get_generator(llm_config: LLMConfig) -> GeneratorBase:
+def get_generator(config: DocmancerConfig) -> GeneratorBase:
     """Get the appropriate generator based on the configuration.
 
     Args:
-        config (LLMConfig): The configuration for the LLM agent.
+        config (DocmancerConfig): The configuration for the Docmancer application.
 
     Returns:
         GeneratorBase: The appropriate generator for the documentation generation.
@@ -114,7 +113,7 @@ def get_generator(llm_config: LLMConfig) -> GeneratorBase:
     else:
         try:
             agent_factory = LlmFactory()
-            agent = agent_factory.get_agent(llm_config=llm_config)
+            agent = agent_factory.get_agent(llm_config=config.llm_config)
         except NotImplementedError as e:
             print(f"LLM agent not implemented: {e}")
         generator = LlmGenerator(agent=agent)

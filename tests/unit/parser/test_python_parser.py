@@ -1,9 +1,8 @@
 import pytest
 from tree_sitter import Parser, Language
 import tree_sitter_python as tspython
-from docmancer.parser.python_parser import PythonParser
 from docmancer.models.function_context import FunctionContextModel
-
+from docmancer.parser.python_parser import PythonParser
 
 @pytest.fixture
 def parser():
@@ -32,7 +31,7 @@ def foo(x, y):
     assert ctx.qualified_name == "test_module.foo"
     assert ctx.signature.startswith("def foo")
     assert "return x + y" in ctx.body
-    assert ctx.comments == ""
+    assert ctx.docstring is None
 
 
 def test_extract_function_with_return_type(parser, get_root_node):
@@ -57,8 +56,9 @@ def add(a, b):
     root_node = get_root_node(code)
     contexts = parser.extract_function_contexts(root_node, code, "test_module")
     assert len(contexts) == 1
-    ctx = contexts[0]
-    assert ctx.comments == "# This is a test function\n# It adds two numbers"
+    ctx: FunctionContextModel = contexts[0]
+    assert ctx.qualified_name == "test_module.add"
+    assert ctx.docstring is None # Docstring is None, comments are not captured
 
 
 def test_extract_nested_function(parser, get_root_node):
@@ -87,4 +87,4 @@ class MyClass:
     contexts = parser.extract_function_contexts(root_node, code, "test_module")
     assert any("MyClass.method" in c.qualified_name for c in contexts)
     method_ctx = next(c for c in contexts if "MyClass.method" in c.qualified_name)
-    assert "This is a method" in method_ctx.comments
+    assert method_ctx.docstring is None # No docstring, only comments

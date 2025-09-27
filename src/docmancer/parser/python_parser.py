@@ -3,7 +3,7 @@
 from typing import List
 import tree_sitter_python as tspython
 from tree_sitter import Language, Parser
-from docmancer.models.functional_models import ParameterModel
+from docmancer.models.functional_models import ParameterModel, DocstringModel
 from docmancer.parser.parser_base import ParserBase
 from docmancer.models.function_context import FunctionContextModel
 
@@ -51,7 +51,6 @@ class PythonParser(ParserBase):
     def extract_function_contexts(
         self, root_node, source_code: str, module_name: str
     ) -> List[FunctionContextModel]:
-        lines = source_code.splitlines()
 
         contexts = []
         node_stack = [(root_node, [])]  # (node, scope_stack)
@@ -69,7 +68,17 @@ class PythonParser(ParserBase):
                 signature = f"def {name}{self.get_node_text(parameters_node, source_code=source_code)}"
 
                 block_node = node.child_by_field_name("body")
+                if not block_node:
+                    continue
+                docstring = None
                 body = self.get_node_text(block_node, source_code=source_code)
+                first_stmt = block_node.child(0)
+                if first_stmt and first_stmt.type == "expression_statement":
+                    expr = first_stmt.child(0)
+                    if expr and expr.type == "string":
+                        # Get the text slice from the original source
+                        comment = self.get_node_text(expr, source_code)
+                        docstring = DocstringModel(lines=comment.splitlines(), start_line=expr.start_point[0])
 
                 parameters = self.get_parameters(parameters_node, source_code)
 
@@ -79,27 +88,15 @@ class PythonParser(ParserBase):
                 if type_node:
                     return_type = self.get_node_text(type_node, source_code=source_code)
 
-                # Gather comments above the function
-                start_line = node.start_point[0]
-                comment_lines = []
-                for i in range(start_line - 1, -1, -1):
-                    line = lines[i].strip()
-                    if line.startswith(b"#"):
-                        comment_lines.insert(0, line.decode("utf8"))
-                    elif line == "":
-                        continue
-                    else:
-                        break
-
                 context = FunctionContextModel(
                     qualified_name=qualified_name,
                     parameters=parameters,
                     return_type=return_type,
                     signature=signature,
                     body=body,
-                    comments="\n".join(comment_lines),
-                    start_line=node.start_point[0] + 1,
-                    end_line=node.end_point[0] + 1,
+                    docstring=docstring,
+                    start_line=node.start_point[0],
+                    end_line=node.end_point[0],
                 )
                 contexts.append(context)
 

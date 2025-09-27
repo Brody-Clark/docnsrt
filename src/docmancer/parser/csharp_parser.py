@@ -5,7 +5,7 @@ import tree_sitter_c_sharp as tscsharp
 from tree_sitter import Language, Parser
 from docmancer.parser.parser_base import ParserBase
 from docmancer.models.function_context import FunctionContextModel
-from docmancer.models.functional_models import ParameterModel
+from docmancer.models.functional_models import ParameterModel, DocstringModel
 
 
 class CSharpParser(ParserBase):
@@ -108,10 +108,11 @@ class CSharpParser(ParserBase):
                     return_type = identifiers[0]
                     identifiers = identifiers[1:]
 
-                comments = None
+                docstring = None
                 prev_sibling = node.prev_sibling
                 if prev_sibling is not None and prev_sibling.type == "comment":
-                    comments = self.get_node_text(prev_sibling, source_code=source_code)
+                    comment = self.get_node_text(prev_sibling, source_code=source_code)
+                    docstring = DocstringModel(lines=comment.splitlines(), start_line=prev_sibling.start_point[0])
 
                 modifiers_str = " ".join(modifiers) if modifiers else ""
                 identifiers_str = " ".join(identifiers) if identifiers else ""
@@ -131,7 +132,7 @@ class CSharpParser(ParserBase):
                         body=body,
                         return_type=return_type.strip(),
                         parameters=parameters,
-                        comments=comments,
+                        docstring=docstring,
                         start_line=node.range.start_point.row,
                         end_line=node.range.end_point.row,
                     )

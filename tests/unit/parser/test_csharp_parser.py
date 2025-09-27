@@ -51,8 +51,8 @@ class Bar {
     contexts = parser.extract_function_contexts(root_node, code, "Bar")
     assert len(contexts) == 1
     ctx = contexts[0]
-    assert ctx.comments is not None
-    assert "This is a test method" in ctx.comments
+    assert ctx.docstring is not None
+    assert "This is a test method" in ctx.docstring.lines[0]
 
 
 def test_get_enclosing_class_name(parser, get_root_node):
@@ -69,4 +69,4 @@ class Baz {
     ctx = contexts[0]
     assert ctx.qualified_name == "Baz.Baz.DoSomething"
     assert ctx.signature.startswith("public void DoSomething")
-    assert ctx.comments is None
+    assert ctx.docstring is None

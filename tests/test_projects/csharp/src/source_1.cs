@@ -11,7 +11,7 @@ namespace SampleProject
             return a + b;
         }
 
-        // Regular instance function
+        
         public int Multiply(int a, int b)
         {
             return a * b;

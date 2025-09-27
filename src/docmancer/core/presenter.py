@@ -8,16 +8,14 @@ import threading
 import tempfile
 import subprocess
 from typing import List, Callable, Any, Coroutine
-import platform
 from dataclasses import dataclass
 from rich.console import Console
 from rich.rule import Rule
-
 # from rich.spinner import Spinner
 from prompt_toolkit.styles import Style
 from prompt_toolkit.shortcuts import prompt
 from docmancer.models.documentation_model import DocumentationModel
-
+from docmancer.utils import platform_utils
 
 class UserResponse(Enum):
     """
@@ -87,35 +85,28 @@ class Presenter:
                 return UserResponseModel(doc_model=doc, response=UserResponse.SKIP)
             if response == USER_RESPONSES[UserResponse.EDIT]:
                 try:
-                    doc.formatted_documentation = self.edit_text_with_editor(
-                        doc.formatted_documentation
+                    doc.new_docstring.lines = self.edit_text_with_editor(
+                        doc.new_docstring.lines
                     )
                 except Exception as e:
                     print(e)
                 continue
 
-    def edit_text_with_editor(self, initial_text: List[str]) -> str:
+    def edit_text_with_editor(self, initial_text: List[str]) -> List[str]:
         """
         Opens the default text editor with the initial text for editing.
         """
-        editor = self.get_default_editor()
+        editor = platform_utils.get_default_editor()
         with tempfile.NamedTemporaryFile(suffix=".tmp", mode="w+", delete=False) as tf:
             tf.writelines(initial_text)
             tf.flush()
             file_path = tf.name
 
+        # TODO: handle errors
         subprocess.call([editor, file_path])
 
         with open(file_path, "r", encoding="utf-8") as tf:
             return tf.readlines()
-
-    def get_default_editor(self):
-        """
-        Returns the default text editor for the current platform.
-        """
-        if platform.system() == "Windows":
-            return os.environ.get("EDITOR", "notepad")
-        return os.environ.get("EDITOR", "nano")
 
     def print_error(self, message: str):
         """Prints an error message."""
@@ -231,21 +222,23 @@ class Presenter:
         """
         Interacts with the user to accept, edit, skip, or quit the documentation generation.
         """
+        self._console.print("\n")
         self._console.clear()
         self._console.print(Rule(style="grey69", title="Source"))
         self._console.print(
             f"[grey69]File:[/grey69] [yellow]{doc.file_path or 'unknown'}"
         )
         self._console.print(
-            f"[grey69]Line:[/grey69] [cyan]{doc.start_line or 'unknown'}"
+            f"[grey69]Line:[/grey69] [cyan]{doc.new_docstring.start_line or 'unknown'}"
         )
         self._console.print(f"[grey69]Function:[/grey69] [grey]{doc.signature}")
 
         if doc.existing_docstring:
+            current_lines = "\n".join(doc.existing_docstring.lines)
             self._console.print("[grey69]Existing Docstring:")
-            self._console.print(f"[pale_green1]{doc.existing_docstring.strip()}")
+            self._console.print(f"[pale_green1]{current_lines.strip()}")
         self._console.print(Rule(style="grey69", title="Generated Docstring"))
-        formatted_doc = "".join(doc.formatted_documentation)
+        formatted_doc = "".join(doc.new_docstring.lines).strip()
         self._console.print(f"[green]{formatted_doc}")
         self._console.print(Rule(style="grey69"))
 
