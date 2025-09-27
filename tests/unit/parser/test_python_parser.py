@@ -4,6 +4,7 @@ import tree_sitter_python as tspython
 from docmancer.models.function_context import FunctionContextModel
 from docmancer.parser.python_parser import PythonParser
 
+
 @pytest.fixture
 def parser():
     return PythonParser()
@@ -58,7 +59,7 @@ def add(a, b):
     assert len(contexts) == 1
     ctx: FunctionContextModel = contexts[0]
     assert ctx.qualified_name == "test_module.add"
-    assert ctx.docstring is None # Docstring is None, comments are not captured
+    assert ctx.docstring is None  # Docstring is None, comments are not captured
 
 
 def test_extract_nested_function(parser, get_root_node):
@@ -87,4 +88,4 @@ class MyClass:
     contexts = parser.extract_function_contexts(root_node, code, "test_module")
     assert any("MyClass.method" in c.qualified_name for c in contexts)
     method_ctx = next(c for c in contexts if "MyClass.method" in c.qualified_name)
-    assert method_ctx.docstring is None # No docstring, only comments
+    assert method_ctx.docstring is None  # No docstring, only comments

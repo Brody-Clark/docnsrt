@@ -19,7 +19,7 @@ def string_manip(s):
 
 
 def login(user, p):
-    """ Logs a user in. """
+    """Logs a user in."""
     if len(user) == 0 or len(p) == 0:
         raise ValueError("field cannot be empty")
     try:

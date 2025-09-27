@@ -24,7 +24,7 @@ class TestCsharpXmlFormatter(unittest.TestCase):
             return_type="int",
             docstring=DocstringModel(lines=[], start_line=0),
             start_line=1,
-            end_line=3
+            end_line=3,
         )
 
         test_param_1 = ParameterModel(
@@ -53,7 +53,9 @@ class TestCsharpXmlFormatter(unittest.TestCase):
         assert (
             test_doc_model.offset_spaces == 4
         )  # should be same offset as function declaration
-        assert test_doc_model.start_line == 1 # XML comments go right above the signature so start_line is the same as the signature
+        assert (
+            test_doc_model.start_line == 1
+        )  # XML comments go right above the signature so start_line is the same as the signature
         assert test_doc_model.formatted_documentation == expected_docstring
 
     @patch("docmancer.formatter.csharp_formatters.fu.get_line_text_offset_spaces")
@@ -71,7 +73,7 @@ class TestCsharpXmlFormatter(unittest.TestCase):
             return_type="int",
             start_line=10,
             end_line=12,
-            docstring=DocstringModel(lines=[], start_line=0)
+            docstring=DocstringModel(lines=[], start_line=0),
         )
         param1 = ParameterModel(name="x", type="int", desc="first number")
         param2 = ParameterModel(name="y", type="int", desc="second number")
@@ -110,7 +112,7 @@ class TestCsharpXmlFormatter(unittest.TestCase):
             return_type="void",
             start_line=5,
             end_line=6,
-            docstring=DocstringModel(lines=[], start_line=0)
+            docstring=DocstringModel(lines=[], start_line=0),
         )
         func_summary = FunctionSummaryModel(
             summary="Prints Hello.",
@@ -144,7 +146,7 @@ class TestCsharpXmlFormatter(unittest.TestCase):
             body="",
             start_line=1,
             end_line=2,
-            docstring=DocstringModel(lines=[], start_line=0)
+            docstring=DocstringModel(lines=[], start_line=0),
         )
         func_summary = FunctionSummaryModel(
             summary="Bad offset test.",

@@ -23,7 +23,7 @@ class TestPepFormatter(unittest.TestCase):
             return_type="None",
             start_line=1,
             end_line=3,
-            docstring=DocstringModel(lines=[], start_line=2)
+            docstring=DocstringModel(lines=[], start_line=2),
         )
         test_func_summary = FunctionSummaryModel(
             summary="this is a test function",
@@ -49,5 +49,7 @@ class TestPepFormatter(unittest.TestCase):
         assert (
             test_doc_model.offset_spaces == 8
         )  # must be a tab (4) added to existing (provided by mock)
-        assert test_doc_model.start_line == 2 # pep docstrings go right below the signature
+        assert (
+            test_doc_model.start_line == 2
+        )  # pep docstrings go right below the signature
         assert test_doc_model.formatted_documentation == expected_docstring
