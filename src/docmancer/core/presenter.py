@@ -11,11 +11,13 @@ from typing import List, Callable, Any, Coroutine
 from dataclasses import dataclass
 from rich.console import Console
 from rich.rule import Rule
+
 # from rich.spinner import Spinner
 from prompt_toolkit.styles import Style
 from prompt_toolkit.shortcuts import prompt
 from docmancer.models.documentation_model import DocumentationModel
 from docmancer.utils import platform_utils
+
 
 class UserResponse(Enum):
     """

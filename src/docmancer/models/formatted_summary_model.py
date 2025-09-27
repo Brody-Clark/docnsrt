@@ -5,6 +5,7 @@ from typing import List
 from dataclasses_json import dataclass_json
 from docmancer.models.docstring_models import DocstringLocation
 
+
 @dataclass_json
 @dataclass
 class FormattedSummaryModel:
@@ -13,4 +14,6 @@ class FormattedSummaryModel:
     start_line: int  # Start line of documentation
     formatted_documentation: List[str]  # Formatted doc string lines
     offset_spaces: int = 0  # Number of spaces to offset formatted_documentation
-    docstring_location: DocstringLocation = DocstringLocation.INLINE  # Location of the docstring
+    docstring_location: DocstringLocation = (
+        DocstringLocation.INLINE
+    )  # Location of the docstring

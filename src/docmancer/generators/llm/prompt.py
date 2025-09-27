@@ -28,7 +28,9 @@ class Prompt:
         # At runtime, inject values
         prompt = self._prompt_template.format(
             signature=context.signature,
-            preceding_comments=self._get_leading_comments_str(context.docstring.lines if context.docstring else []),
+            preceding_comments=self._get_leading_comments_str(
+                context.docstring.lines if context.docstring else []
+            ),
             qualified_name=context.qualified_name,
             body=context.body,
             expected_json_format=self._get_expected_json_format(),

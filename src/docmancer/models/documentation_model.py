@@ -14,8 +14,12 @@ class DocumentationModel:
 
     qualified_name: str  # Full function name. e.g., module.Class.method
     signature: str  # Full function signature
-    new_docstring: Optional[DocstringModel] = None  # New docstring to replace the existing one
+    new_docstring: Optional[DocstringModel] = (
+        None  # New docstring to replace the existing one
+    )
     offset_spaces: int = 0  # Number of spaces to offset formatted_documentation
     file_path: Optional[str] = None  # Relative file path
     existing_docstring: Optional[DocstringModel] = None  # If present
-    docstring_location: DocstringLocation = DocstringLocation.INLINE  # Location of the docstring
+    docstring_location: DocstringLocation = (
+        DocstringLocation.INLINE
+    )  # Location of the docstring

@@ -161,17 +161,17 @@ class DocumentationPipeline:
                 end_line = start_line + len(doc.existing_docstring.lines)
                 del lines[start_line:end_line]
                 removed_lines = len(doc.existing_docstring.lines)
-                
+
             # Write the docstring to the appropriate location
             indented_documentation = [
                 " " * doc.offset_spaces + doc_line
                 for doc_line in doc.new_docstring.lines
             ]
-            
+
             # If docstring is above the function, adjust the line to insert at if lines were removed
             if doc.docstring_location == DocstringLocation.ABOVE:
                 adjusted_line = max(0, adjusted_line - removed_lines)
-            
+
             lines[adjusted_line:adjusted_line] = list(indented_documentation)
 
             offset += len(doc.new_docstring.lines) - removed_lines

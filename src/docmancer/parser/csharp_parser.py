@@ -112,7 +112,10 @@ class CSharpParser(ParserBase):
                 prev_sibling = node.prev_sibling
                 if prev_sibling is not None and prev_sibling.type == "comment":
                     comment = self.get_node_text(prev_sibling, source_code=source_code)
-                    docstring = DocstringModel(lines=comment.splitlines(), start_line=prev_sibling.start_point[0])
+                    docstring = DocstringModel(
+                        lines=comment.splitlines(),
+                        start_line=prev_sibling.start_point[0],
+                    )
 
                 modifiers_str = " ".join(modifiers) if modifiers else ""
                 identifiers_str = " ".join(identifiers) if identifiers else ""

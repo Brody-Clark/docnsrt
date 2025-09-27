@@ -1,7 +1,8 @@
-""" Utility functions for platform-specific tasks """
+"""Utility functions for platform-specific tasks"""
 
 import os
-import platform  
+import platform
+
 
 def get_default_editor():
     """

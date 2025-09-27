@@ -56,7 +56,8 @@ class PythonPepFormatter(FormatterBase):
 
         doc_model = FormattedSummaryModel(
             formatted_documentation=lines,
-            start_line=func_context.start_line + 1,  # pep doc strings go right below the signature
+            start_line=func_context.start_line
+            + 1,  # pep doc strings go right below the signature
             offset_spaces=offset,
             docstring_location=DocstringLocation.BELOW,
         )

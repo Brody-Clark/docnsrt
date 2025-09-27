@@ -78,7 +78,9 @@ class PythonParser(ParserBase):
                     if expr and expr.type == "string":
                         # Get the text slice from the original source
                         comment = self.get_node_text(expr, source_code)
-                        docstring = DocstringModel(lines=comment.splitlines(), start_line=expr.start_point[0])
+                        docstring = DocstringModel(
+                            lines=comment.splitlines(), start_line=expr.start_point[0]
+                        )
 
                 parameters = self.get_parameters(parameters_node, source_code)
 
