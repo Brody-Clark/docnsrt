@@ -3,7 +3,7 @@
 <p align="center">
 Supported Languages:
   <em>
-    Python
+    Python, C#
   </em>
 </p>
 

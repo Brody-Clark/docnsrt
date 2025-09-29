@@ -63,8 +63,13 @@ See the [Poetry installation docs](https://python-poetry.org/docs/#installing-wi
 3. Activate the Virtual Environment
 
     ```bash
-    poetry shell
+    poetry env activate
     ```
+    > [!NOTE]
+    > On Windows you may need to relax Powershell policies regarding script execution. You can run
+    > ```powershell
+    > Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+    > ```
 
 ## Code Style & Formatting with Black
 
