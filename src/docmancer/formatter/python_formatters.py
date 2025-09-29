@@ -1,29 +1,28 @@
-from docmancer.models.documentation_model import DocumentationModel
+"""Formatters for Python code."""
+
+from docmancer.models.formatted_summary_model import FormattedSummaryModel
 from docmancer.formatter.formatter_base import FormatterBase
 from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
+from docmancer.models.docstring_models import DocstringLocation
+
 import docmancer.utils.file_utils as fu
 
 INDENT_SPACES = 4
 
 
-class PyDocstringFormatter(FormatterBase):
+class PythonPepFormatter(FormatterBase):
+    """
+    Formats Python docstrings according to PEP 257.
+    """
 
     def get_formatted_documentation(
         self,
+        file_path: str,
         func_context: FunctionContextModel,
         func_summary: FunctionSummaryModel,
-        file_path: str,
-    ) -> DocumentationModel:
-        """
-        Formats a Python docstring for a function.
+    ) -> FormattedSummaryModel:
 
-        Args:
-            doc_model: Generated documentation response model object
-
-        Returns:
-            A formatted Python docstring string.
-        """
         function_signature_offset = fu.get_line_text_offset_spaces(
             file_path, func_context.start_line
         )
@@ -52,17 +51,15 @@ class PyDocstringFormatter(FormatterBase):
             offset = function_signature_offset + INDENT_SPACES
         else:
             raise ValueError(
-                f"Unable to read start line {func_context.start_line} from file {file_path}"
+                f"Unable to read start line {func_context.start_line} from file {func_context.file_path}"
             )
 
-        doc_model = DocumentationModel(
-            qualified_name=func_context.qualified_name,
+        doc_model = FormattedSummaryModel(
             formatted_documentation=lines,
-            signature=func_context.signature,
-            start_line=func_context.start_line,  # pep doc strings go right below the signature
-            file_path=file_path,
-            existing_docstring=func_context.comments,
+            start_line=func_context.start_line
+            + 1,  # pep doc strings go right below the signature
             offset_spaces=offset,
+            docstring_location=DocstringLocation.BELOW,
         )
 
         return doc_model

@@ -3,23 +3,39 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Docmancer: Debug External Project",
+            "name": "Docmancer: Debug C# Project",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/src/docmancer/__main__.py",
             "args": [
-                "--write"
+                "--write",
+                "--no-summary"
             ],
-            "cwd": "${workspaceFolder}/tests/test_projects/sample_project_1", // Set CWD to the external project
+            "cwd": "${workspaceFolder}/tests/test_projects/csharp",
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
-                // Add any necessary environment variables for the external project,
-                // e.g., if MyTestProject's code needs specific ENV vars.
+                "DOCMANCER_MODEL_PATH": ""
+            }
+        },
+         {
+            "name": "Docmancer: Debug Python Project",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/docmancer/__main__.py",
+            "args": [
+                "--write",
+                "--no-summary"
+            ],
+            "cwd": "${workspaceFolder}/tests/test_projects/python",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "DOCMANCER_MODEL_PATH": ""
             }
         },
         {
-            "name": "Debug: pytest current file",
+            "name": "Debug: pytest Current File",
             "type": "debugpy",
             "request": "launch",
             "module": "pytest",
@@ -30,7 +46,7 @@
             "justMyCode": true
         },
         {
-            "name": "Python: Current File (with Poetry env)",
+            "name": "Python: Debug Current File (with Poetry env)",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",

@@ -27,6 +27,12 @@ tree-sitter-python = "^0.23.6"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
 black = "^25.1.0"
+pylint = "^3.3.7"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+skip-string-normalization = true
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -1,15 +1,15 @@
-<h1 align="center">Docmancer</h1><h2 align="center"> Documentation Generation Engine</h2>
+<h1 align="center">Docmancer</h1><h2 align="center"> Documentation Generation Framework</h2>
 
 <p align="center">
 Supported Languages:
   <em>
-    Python
+    Python, C#
   </em>
 </p>
 
 ## Intro
 
-Docmancer is a source code documentation generation engine that uses a user-provided Large Language Model to generate docstring summaries for in-code documentation.
+Docmancer is a source code documentation generation framework that generates docstring summaries for in-code documentation with support for various LLMs.
 
 ### Example Usage
 
@@ -33,6 +33,7 @@ docmancer --write --file example_script.py --function claculate_rectangle_area -
 
 ```py
 def calculate_rectangle_area(length, width, unit="meters"):
+  # example_script.py
   """Calculates the area of a rectangle.
 
   Args:

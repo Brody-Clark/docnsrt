@@ -1,6 +1,9 @@
+"""Utilities for file operations."""
+
 import os
 from pathlib import Path
 from typing import List
+import fnmatch
 
 
 def get_all_files_in_dir(dir_path):
@@ -21,14 +24,25 @@ def get_all_files_in_dir(dir_path):
     return files
 
 
-def get_files_by_pattern(pattern: str) -> List[Path]:
+def get_files_by_pattern(
+    start_dir: str, include_patterns: List[str], ignore_patterns: List[str]
+) -> List[Path]:
     """
     Return a list of Path objects matching the given glob pattern.
     Example patterns:
         "*.py" - all Python files in current dir
         "src/**/*.py" - all Python files recursively under src/
     """
-    return list(Path().glob(pattern))  # Non-recursive unless you use **
+    start = Path(start_dir)
+    matches = set()
+
+    for include_pattern in include_patterns:
+        for fn in start.glob(include_pattern):
+            if any(fn.match(ignore_pattern) for ignore_pattern in ignore_patterns):
+                continue
+            matches.add(fn)
+
+    return sorted(matches)
 
 
 def get_line_text_offset_spaces(file_path: str, line: int) -> int:
@@ -41,20 +55,20 @@ def get_line_text_offset_spaces(file_path: str, line: int) -> int:
 
     """
     with open(file_path, "r", encoding="utf8") as f:
-        for idx, line_text in enumerate(f, start=1):
+        for idx, line_text in enumerate(f, start=0):
             if idx == line:
                 return len(line_text) - len(line_text.lstrip(" "))
     return -1
 
 
 def read_file_to_string(file_path):
-    """_summary_
+    """Returns content of a file as a string.
 
     Args:
-        file_path (_type_): _description_
+        file_path (str): path to file
 
     Returns:
-        _type_: _description_
+        str: content of file as string
     """
     with open(file_path, "r", encoding="utf8") as file:
         file_content = file.read()
@@ -62,7 +76,7 @@ def read_file_to_string(file_path):
 
 
 def read_file_to_bytes(file_path):
-    """_summary_
+    """Returns content of a file as bytes.
 
     Args:
         file_path (file_path): path to file

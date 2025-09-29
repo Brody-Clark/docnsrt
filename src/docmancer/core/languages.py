@@ -1,3 +1,5 @@
+"""Supported programming languages."""
+
 from typing import List
 from enum import Enum
 
@@ -8,12 +10,12 @@ class Languages(Enum):
     """
 
     PYTHON = "python"
-    CPP = "cpp"
     CSHARP = "csharp"
-    JAVA = "java"
-    JAVASCRIPT = "javascript"
 
     def lower(self) -> str:
+        """
+        Returns the lowercase version of the language name.
+        """
         return self.value.lower()
 
 

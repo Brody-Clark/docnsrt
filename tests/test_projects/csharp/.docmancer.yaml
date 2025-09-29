@@ -1,0 +1,22 @@
+style: xml
+language: csharp
+files:
+  - "src/**/*.cs"
+functions:
+  - "*"
+ignore_files:
+  - "**/test_*.cs"     
+ignore_functions:
+  - "main"          
+
+llm_config:
+  mode: LOCAL
+  temperature: 0.25   
+  max_tokens_per_response: 2048 
+
+  local:
+    model_path: !ENV DOCMANCER_MODEL_PATH 
+    n_gpu_layers: -1      
+    n_ctx: 4096            
+    n_batch: 512           
+
