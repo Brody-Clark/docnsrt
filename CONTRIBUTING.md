@@ -40,7 +40,7 @@ This project uses [Poetry]([Poetry](https://github.com/python-poetry/poetry)) fo
 If you don't have Poetry installed, run:
 
 ```bash
-curl -sSL https://install.python-poetry.org | python3 -
+curl -sSL https://install.python-poetry.org | python -
 ```
 
 See the [Poetry installation docs](https://python-poetry.org/docs/#installing-with-pipx) for more options.
@@ -51,7 +51,7 @@ See the [Poetry installation docs](https://python-poetry.org/docs/#installing-wi
 
     ```bash
     git clone https://github.com/brody-clark/docmancer.git
-    cd docmancer
+    cd Docmancer
     ```
 
 2. Install Dependencies
