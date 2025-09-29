@@ -15,6 +15,7 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
+                "DOCMANCER_MODEL_PATH": ""
             }
         },
          {
@@ -30,6 +31,7 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
+                "DOCMANCER_MODEL_PATH": ""
             }
         },
         {

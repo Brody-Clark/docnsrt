@@ -30,6 +30,8 @@ def main():
 
         # Accessing config settings
         llm_config = config.llm_config
+        if not llm_config:
+            raise ValueError("LLM configuration is missing in the config file.")
         llm_mode_enum = llm_config.get_mode_enum()
 
         print(f"\nLLM Mode: {llm_mode_enum.value} (Enum: {llm_mode_enum.name})")
@@ -76,7 +78,7 @@ def main():
 
     except (FileNotFoundError, ValueError, RuntimeError, TypeError) as e:
         print(f"Configuration error: {e}", file=sys.stderr)
-        sys.exit(1)
+        print("You will not be able to use LLM-based features.", file=sys.stderr)
     except Exception as e:
         print(f"An unexpected error occurred: {e}", file=sys.stderr)
         sys.exit(1)
