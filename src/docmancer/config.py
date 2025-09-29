@@ -1,14 +1,17 @@
-import yaml
+"""Configuration settings for Docmancer."""
+
 import os
-import sys
 from enum import Enum
+from typing import Optional, List
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List
+import yaml
 from dataclasses_json import dataclass_json
 from docmancer.core.styles import DocstringStyle
 
 
 class LLMType(Enum):
+    """Enumeration of LLM types."""
+
     LOCAL = "LOCAL"
     REMOTE_API = "REMOTE_API"
 
@@ -24,6 +27,8 @@ class LocalLLMSettings:
     n_batch: int = 560
     n_threads: Optional[int] = None
     main_gpu: Optional[int] = None
+    temperature: float = 0.7
+    log_verbose: bool = False
 
 
 @dataclass_json
@@ -52,15 +57,18 @@ class LLMConfig:
     remote_api: Optional[RemoteApiLLMSettings] = None
 
     def get_mode_enum(self) -> LLMType:
+        """
+        Returns the LLMType enum corresponding to the current mode.
+        """
         try:
             return LLMType[self.mode.upper()]
-        except KeyError:
+        except KeyError as key_err:
             raise ValueError(
                 f"Invalid LLM mode '{self.mode}' in config. "
                 f"Must be one of: {', '.join([s.name for s in LLMType])}."
-            )
-        except AttributeError:
-            raise TypeError(f"Mode '{self.mode}' is not a string type.")
+            ) from key_err
+        except AttributeError as attrib_err:
+            raise TypeError(f"Mode '{self.mode}' is not a string type.") from attrib_err
 
 
 @dataclass_json
@@ -82,15 +90,16 @@ class DocmancerConfig:
     force_all: bool = False
 
     def get_default_style_enum(self) -> DocstringStyle:
+        """Returns the default docstring style enum."""
         try:
             for style_enum_member in DocstringStyle:
                 if style_enum_member.value.lower() == self.default_style.lower():
                     return style_enum_member
             raise ValueError(f"Invalid default_style '{self.default_style}' in config.")
-        except AttributeError:
+        except AttributeError as exc:
             raise TypeError(
                 f"default_style '{self.default_style}' is not a string type."
-            )
+            ) from exc
 
 
 class EnvVarLoader(yaml.SafeLoader):
@@ -121,12 +130,11 @@ def construct_env_var(loader, node):
         if default_value is not None:
             # If default is provided, use it
             return default_value
-        else:
-            # If no default and env var is missing, raise an error
-            raise ValueError(
-                f"Environment variable '{env_var_name}' is not set "
-                f"and no default value was provided for '!ENV {value}' in config."
-            )
+        # If no default and env var is missing, raise an error
+        raise ValueError(
+            f"Environment variable '{env_var_name}' is not set "
+            f"and no default value was provided for '!ENV {value}' in config."
+        )
     return env_val
 
 

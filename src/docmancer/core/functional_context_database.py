@@ -2,6 +2,7 @@ import sqlite3
 
 
 class FunctionalContextDatabase:
+
     def __init__(self):
         self._conn = sqlite3.connect("docgen.db")
         self._cursor = self._conn.cursor()

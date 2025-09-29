@@ -5,7 +5,7 @@ description = "A Python CLI tool for automated documentation generation and inse
 authors = [
     {name = "Brody Clark",email = "brodyclark97@gmail.com"}
 ]
-license = {text = "MIT"}
+license = {text = "GNU"}
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -27,10 +27,16 @@ tree-sitter-python = "^0.23.6"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
 black = "^25.1.0"
+pylint = "^3.3.7"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+skip-string-normalization = true
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-docmancer = "docmancer.cli:main" # 'command_name = package.module:function'
+docmancer = "docmancer.__main__:main" # 'command_name = package.module:function'

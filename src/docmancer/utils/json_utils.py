@@ -1,26 +1,17 @@
-import re
+"""Utilities for parsing JSON."""
+
 import json
-
-# def extract_json_from_text(text: str):
-#     """
-#     Extracts and parses the first valid JSON object found in the input text.
-#     Returns the parsed Python object or raises ValueError if no valid JSON is found.
-#     """
-#     # This regex matches the outermost curly braces and captures the inner JSON
-#     json_match = re.search(r'\{(?:[^{}]*|\n)*\}', text, re.DOTALL)
-
-#     if json_match:
-#         json_string = json_match.group()
-#         try:
-#             parsed_json = json.loads(json_string)
-#             return parsed_json
-#         except json.JSONDecodeError:
-#             return None
-#     else:
-#         return None
 
 
 def extract_json_from_text(text: str):
+    """Extracts and parses the first valid JSON object found in the input text.
+
+    Args:
+        text (str): The input text to search for JSON.
+
+    Returns:
+        dict: The parsed JSON object or None if not found.
+    """
     start = text.find("{")
     if start == -1:
         return None

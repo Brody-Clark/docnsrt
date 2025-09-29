@@ -21,5 +21,4 @@ class Calculator:
 
     @staticmethod
     def subtract_static(x: float, y: float) -> float:
-
         return x - y

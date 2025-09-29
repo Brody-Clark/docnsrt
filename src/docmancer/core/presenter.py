@@ -1,24 +1,29 @@
+"""This module contains functions to display text to the CLI."""
+
 from enum import Enum
 import os
 import io
 import sys
-import time
 import threading
 import tempfile
 import subprocess
 from typing import List, Callable, Any, Coroutine
-import platform
 from dataclasses import dataclass
 from rich.console import Console
 from rich.rule import Rule
-from rich.spinner import Spinner
+
+# from rich.spinner import Spinner
 from prompt_toolkit.styles import Style
-from prompt_toolkit.shortcuts import prompt, print_formatted_text
-from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.shortcuts import prompt
 from docmancer.models.documentation_model import DocumentationModel
+from docmancer.utils import platform_utils
 
 
 class UserResponse(Enum):
+    """
+    Enumeration for user responses.
+    """
+
     QUIT = 1
     ACCEPT = 2
     EDIT = 3
@@ -40,6 +45,10 @@ QUIT = USER_RESPONSES[UserResponse.QUIT]
 
 @dataclass
 class UserResponseModel:
+    """
+    Model for user responses.
+    """
+
     doc_model: DocumentationModel
     response: UserResponse
 
@@ -59,45 +68,47 @@ blue_background_style = Style.from_dict(
 
 
 class Presenter:
+    """Presenter class for user interaction and displaying information."""
 
     def __init__(self):
         self._console = Console()
 
     def get_user_approval(self, doc: DocumentationModel) -> UserResponseModel:
+        """
+        Gets user approval for the generated documentation.
+        """
         while True:
             response = self.interact(doc)
             if response == USER_RESPONSES[UserResponse.QUIT]:
                 return UserResponseModel(doc_model=None, response=UserResponse.QUIT)
-            elif response == USER_RESPONSES[UserResponse.ACCEPT]:
+            if response == USER_RESPONSES[UserResponse.ACCEPT]:
                 return UserResponseModel(doc_model=doc, response=UserResponse.ACCEPT)
-            elif response == USER_RESPONSES[UserResponse.SKIP]:
+            if response == USER_RESPONSES[UserResponse.SKIP]:
                 return UserResponseModel(doc_model=doc, response=UserResponse.SKIP)
-            elif response == USER_RESPONSES[UserResponse.EDIT]:
+            if response == USER_RESPONSES[UserResponse.EDIT]:
                 try:
-                    doc.formatted_documentation = self.edit_text_with_editor(
-                        doc.formatted_documentation
+                    doc.new_docstring.lines = self.edit_text_with_editor(
+                        doc.new_docstring.lines
                     )
                 except Exception as e:
                     print(e)
                 continue
 
-    def edit_text_with_editor(self, initial_text: List[str]) -> str:
-        editor = self.get_default_editor()
+    def edit_text_with_editor(self, initial_text: List[str]) -> List[str]:
+        """
+        Opens the default text editor with the initial text for editing.
+        """
+        editor = platform_utils.get_default_editor()
         with tempfile.NamedTemporaryFile(suffix=".tmp", mode="w+", delete=False) as tf:
             tf.writelines(initial_text)
             tf.flush()
             file_path = tf.name
 
+        # TODO: handle errors
         subprocess.call([editor, file_path])
 
-        with open(file_path, "r") as tf:
+        with open(file_path, "r", encoding="utf-8") as tf:
             return tf.readlines()
-
-    def get_default_editor(self):
-        if platform.system() == "Windows":
-            return os.environ.get("EDITOR", "notepad")
-        else:
-            return os.environ.get("EDITOR", "nano")
 
     def print_error(self, message: str):
         """Prints an error message."""
@@ -112,9 +123,19 @@ class Presenter:
     def decorate_slow_task_synchronous(
         self, task_description: str, slow_task: Callable[..., Any], *args, **kwargs
     ) -> Any:
+        """Decorates a slow task with a spinner.
+
+        Args:
+            task_description (str): Description of the task being performed.
+            slow_task (Callable[..., Any]): The slow task to be executed.
+
+        Raises:
+            RuntimeError: If the slow task fails.
+
+        Returns:
+            Any: The result of the slow task.
+        """
         spinner_name = "star"
-        # spinner_name="moon"
-        # spinner_name="earth"
         result_container = {"result": None, "exception": None}
 
         def target_function():
@@ -143,7 +164,7 @@ class Presenter:
 
         with self._console.status(
             f"[bold magenta]{task_description}...[/bold magenta]", spinner=spinner_name
-        ) as status:
+        ):
             while thread.is_alive():
                 # Keep the main thread alive and let rich update the spinner
                 pass
@@ -158,9 +179,9 @@ class Presenter:
         # After the thread finishes, retrieve the result or re-raise the exception
         if result_container["exception"]:
             self.print_error(f"Task failed: {result_container['exception']}")
-            raise result_container["exception"]
-        else:
-            return result_container["result"]
+            raise RuntimeError(result_container["exception"])
+
+        return result_container["result"]
 
     async def magic_spinner_async(
         self,
@@ -184,12 +205,11 @@ class Presenter:
         spinner_name = "line"  # Or another magical spinner
         with self._console.status(
             f"[bold magenta]{task_description}...[/bold magenta]", spinner=spinner_name
-        ) as status:
+        ):
             try:
                 result = await async_slow_task(*args, **kwargs)
                 return result
             except Exception as e:
-                status.stop()  # Ensure spinner stops on error
                 self.print_error(f"Asynchronous task failed: {e}")
                 raise  # Re-raise the exception after printing error
 
@@ -201,22 +221,26 @@ class Presenter:
         return answer
 
     def interact(self, doc: DocumentationModel):
+        """
+        Interacts with the user to accept, edit, skip, or quit the documentation generation.
+        """
+        self._console.print("\n")
         self._console.clear()
         self._console.print(Rule(style="grey69", title="Source"))
         self._console.print(
             f"[grey69]File:[/grey69] [yellow]{doc.file_path or 'unknown'}"
         )
         self._console.print(
-            f"[grey69]Line:[/grey69] [cyan]{doc.start_line or 'unknown'}"
+            f"[grey69]Line:[/grey69] [cyan]{doc.new_docstring.start_line or 'unknown'}"
         )
         self._console.print(f"[grey69]Function:[/grey69] [grey]{doc.signature}")
-        # self._console.print(Rule(style="grey69"))
 
         if doc.existing_docstring:
+            current_lines = "\n".join(doc.existing_docstring.lines)
             self._console.print("[grey69]Existing Docstring:")
-            self._console.print(f"[pale_green1]{doc.existing_docstring.strip()}")
+            self._console.print(f"[pale_green1]{current_lines.strip()}")
         self._console.print(Rule(style="grey69", title="Generated Docstring"))
-        formatted_doc = "".join(doc.formatted_documentation)
+        formatted_doc = "".join(doc.new_docstring.lines).strip()
         self._console.print(f"[green]{formatted_doc}")
         self._console.print(Rule(style="grey69"))
 
@@ -227,4 +251,7 @@ class Presenter:
         return result.strip().lower()
 
     def clear_console(self):
+        """
+        Clears the console output.
+        """
         self._console.clear()
