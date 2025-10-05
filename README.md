@@ -9,7 +9,7 @@ Supported Languages:
 
 ## Intro
 
-Docmancer is a source code documentation generation framework that generates docstring summaries for in-code documentation with support for various LLMs.
+Docmancer is a CLI source code documentation generation tool that writes docstring summaries for in-code documentation with support for various LLMs. It is designed to streamline the process of using LLMs to insert consistently formatted soure code documentation with flexibilty and ease of use in mind.
 
 ### Example Usage
 

@@ -33,12 +33,14 @@ class LocalLLMSettings:
 
 @dataclass_json
 @dataclass
-class RemoteApiLLMSettings:
+class RemoteLLMSettings:
     """Settings for interacting with a remote LLM API."""
 
-    base_url: str
-    model_name: str
-    api_key_env_var: Optional[str] = None
+    api_endpoint: str
+    headers: Optional[dict] = field(default_factory=dict)
+    temperature: float = 0.7
+    payload_template: Optional[dict] = field(default_factory=dict)
+    response_path: str = ""
     track_tokens_and_cost: bool = True
     user_max_prompt_tokens: Optional[int] = None
 
@@ -49,12 +51,10 @@ class LLMConfig:
     """General LLM configuration and mode-specific settings."""
 
     mode: str = ""
-    temperature: float = 0.7
-    max_tokens_per_response: int = 2048
 
     # Nested settings based on mode
     local: Optional[LocalLLMSettings] = None
-    remote_api: Optional[RemoteApiLLMSettings] = None
+    remote_api: Optional[RemoteLLMSettings] = None
 
     def get_mode_enum(self) -> LLMType:
         """

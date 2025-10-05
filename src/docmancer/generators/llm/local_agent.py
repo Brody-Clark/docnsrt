@@ -12,16 +12,23 @@ class LlamaCppAgent(LlmAgentBase):
 
     def __init__(self, settings: LocalLLMSettings):
         self._settings = settings
-
-    def send_message(self, message: str) -> str:
-
-        llm = Llama(
+        self._llm = Llama(
             model_path=self._settings.model_path,
             chat_format="chatml",
             n_ctx=self._settings.n_ctx,
             verbose=self._settings.log_verbose,
         )
-        response = llm.create_chat_completion(
+        # Warm up the model
+        self._llm(
+            prompt="hello",
+            max_tokens=1,
+            stream=False,
+        )
+        
+
+    def send_message(self, message: str) -> str:
+
+        response = self._llm.create_chat_completion(
             messages=[
                 {
                     "role": "system",
