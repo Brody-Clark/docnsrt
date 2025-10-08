@@ -55,25 +55,14 @@ def main():
                     "Config error: 'remote_api' settings missing for REMOTE_API mode."
                 )
             remote_settings = llm_config.remote_api
-            print(f"  Base URL: {remote_settings.base_url}")
-            print(f"  Model Name: {remote_settings.model_name}")
+            print(f"  Endpoint: {remote_settings.api_endpoint}")
+            print(f"  Provider: {remote_settings.provider}")
             print(f"  Track Tokens/Cost: {remote_settings.track_tokens_and_cost}")
 
-            if remote_settings.api_key_env_var:
-                api_key = os.environ.get(remote_settings.api_key_env_var)
-                if not api_key:
-                    print(
-                        f"Error: API key environment variable "
-                        f"'{remote_settings.api_key_env_var}' not set.",
-                        file=sys.stderr,
-                    )
-                    sys.exit(1)
-            else:
-                print("  No API key environment variable specified.")
-
+           
             if remote_settings.track_tokens_and_cost:
                 print(
-                    f"  User Max Prompt Tokens: {remote_settings.user_max_prompt_tokens}"
+                    f"  User Max Prompt Tokens: {llm_config.max_tokens_per_response}"
                 )
 
     except (FileNotFoundError, ValueError, RuntimeError, TypeError) as e:
@@ -117,7 +106,7 @@ def get_generator(config: DocmancerConfig) -> GeneratorBase:
             agent_factory = LlmFactory()
             agent = agent_factory.get_agent(llm_config=config.llm_config)
         except NotImplementedError as e:
-            print(f"LLM agent not implemented: {e}")
+            print(f"Error determining LLM agent type: {e}")
         generator = LlmGenerator(agent=agent)
     return generator
 

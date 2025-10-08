@@ -1,10 +1,10 @@
 """Web-based LLM agent."""
 
-from typing import Dict, Any, Optional
 import json
-import httpx
+import requests
+from copy import deepcopy
 from docmancer.generators.llm.llm_agent_base import LlmAgentBase
-from docmancer.config import RemoteLLMSettings
+from docmancer.config import LLMConfig
 
 
 class WebAgent(LlmAgentBase):
@@ -12,7 +12,7 @@ class WebAgent(LlmAgentBase):
     Web-based LLM agent.
     """
 
-    def __init__(self, settings: RemoteLLMSettings, timeout_seconds: int = 60):
+    def __init__(self, settings: LLMConfig, timeout_seconds: int = 60):
         """
         Initializes the WebAgent with the LLM API endpoint and an optional API key.
 
@@ -24,18 +24,34 @@ class WebAgent(LlmAgentBase):
             api_key (Optional[str]): The API key for authentication, if required by the endpoint.
                                       Can be None if the endpoint doesn't require one.
         """
-        if not settings.base_url:
+        if not settings.remote_api.api_endpoint:
             raise ValueError("API endpoint cannot be empty.")
-        self.api_endpoint = settings.base_url
-        self._client = httpx.AsyncClient()
+        self.api_endpoint = settings.remote_api.api_endpoint
         self._timeout_seconds = timeout_seconds
         self.temperature = settings.temperature
-        self._headers = settings.headers or {}
-        self._payload_template = settings.payload_template or {}
-        self._response_path = settings.response_path or ""
-        
+        self._headers = settings.remote_api.headers or {}
+        self._payload_template = settings.remote_api.payload_template or {}
+        self._response_path = settings.remote_api.response_path or ""
+        self._prompt_placeholder = "${prompt}"        
     
-    def send_message(self, message: str) -> str:
+    def _replace_prompt_in_obj(self, obj: any, prompt: str) -> any:
+        """
+        Recursively replace occurrences of the prompt placeholder in a JSON-like structure.
+
+        Supports nested dicts, lists and strings (including strings that contain the placeholder).
+        Leaves other types untouched.
+        """
+        if isinstance(obj, str):
+            if self._prompt_placeholder in obj:
+                return obj.replace(self._prompt_placeholder, prompt)
+            return obj
+        if isinstance(obj, dict):
+            return {k: self._replace_prompt_in_obj(v, prompt) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [self._replace_prompt_in_obj(v, prompt) for v in obj]
+        return obj
+    
+    def get_response(self, message: str) -> str:
         """
         Sends a message to the LLM API and returns the response.
 
@@ -50,68 +66,36 @@ class WebAgent(LlmAgentBase):
             httpx.RequestError: For network-related errors.
             json.JSONDecodeError: If the response is not valid JSON.
         """
-        # Construct payload based on template and message
-        payload = self._payload_template.copy()
-        payload["messages"] = [
-            {
-                "role": "system",
-                "content": "You are a source code documentation generator that responds only in JSON format.",
-            },
-            {
-                "role": "user",
-                "content": message,
-            },
-        ]
+        # Build payload by substituting prompt placeholder in a deepcopy of the template
+        payload = deepcopy(self._payload_template)
+        payload = self._replace_prompt_in_obj(payload, message)
 
-        # Make the API request
+        print(f"Sending request to LLM API at {self.api_endpoint} with payload: {payload}")
         try:
-            response_json = httpx.run(self._make_api_request(payload))
-        except httpx.HTTPError as e:
-            print(f"Error occurred while making API request: {e}")
-            return json.dumps({"error": str(e)})
-
-        # Extract response based on response path if provided
-        if self._response_path:
-            keys = self._response_path.split(".")
-            for key in keys:
-                response_json = response_json.get(key, {})
-        
-        return json.dumps(response_json)
-    async def _make_api_request(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Internal method to make the actual HTTP POST request to the LLM API.
-
-        Args:
-            payload (Dict[str, Any]): The JSON payload to send to the API.
-                                       This structure depends heavily on the LLM API.
-
-        Returns:
-            Dict[str, Any]: The JSON response from the API.
-
-        Raises:
-            httpx.HTTPStatusError: If the API returns a non-2xx status code.
-            httpx.RequestError: For network-related errors.
-            json.JSONDecodeError: If the response is not valid JSON.
-        """
-        try:
-            response = await self._client.post(
+            response = requests.post(
                 self.api_endpoint,
                 headers=self._headers,
                 json=payload,
                 timeout=self._timeout_seconds,
             )
-            response.raise_for_status()  # Raises HTTPStatusError for 4xx/5xx responses
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            print(
-                f"API request failed with status {e.response.status_code}: {e.response.text}"
-            )
-            raise
-        except httpx.RequestError as e:
-            print(f"An error occurred while requesting {e.request.url!r}: {e}")
-            raise
-        except json.JSONDecodeError as e:
-            print(
-                f"Failed to decode JSON response: {e}. Response text: {response.text}"
-            )
-            raise
+            response.raise_for_status()
+            response_json = response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Error occurred while making API request: {e}")
+            return json.dumps({"error": str(e)})
+
+        # Extract response based on response path if provided
+        if self._response_path:
+            parts = self._response_path.split(".")
+            node = response_json
+            for p in parts:
+                if isinstance(node, dict):
+                    node = node.get(p, {})
+                else:
+                    node = {}
+            # if final node is not a string, return its json representation
+            return node if isinstance(node, str) else json.dumps(node)
+
+        # Default: return json.dumps of the full response
+        return json.dumps(response_json)
+    

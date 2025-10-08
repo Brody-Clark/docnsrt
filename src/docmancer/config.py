@@ -27,7 +27,6 @@ class LocalLLMSettings:
     n_batch: int = 560
     n_threads: Optional[int] = None
     main_gpu: Optional[int] = None
-    temperature: float = 0.7
     log_verbose: bool = False
 
 
@@ -36,13 +35,12 @@ class LocalLLMSettings:
 class RemoteLLMSettings:
     """Settings for interacting with a remote LLM API."""
 
+    provider: str
     api_endpoint: str
     headers: Optional[dict] = field(default_factory=dict)
-    temperature: float = 0.7
     payload_template: Optional[dict] = field(default_factory=dict)
     response_path: str = ""
     track_tokens_and_cost: bool = True
-    user_max_prompt_tokens: Optional[int] = None
 
 
 @dataclass_json
@@ -51,7 +49,8 @@ class LLMConfig:
     """General LLM configuration and mode-specific settings."""
 
     mode: str = ""
-
+    temperature: float = 0.7
+    max_tokens_per_response: int = 1024
     # Nested settings based on mode
     local: Optional[LocalLLMSettings] = None
     remote_api: Optional[RemoteLLMSettings] = None

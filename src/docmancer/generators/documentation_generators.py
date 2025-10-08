@@ -58,7 +58,7 @@ class LlmGenerator(GeneratorBase):
         # Prompt model and get response
         try:
             prompt_msg = self._prompt.create(context)
-            response = self._agent.send_message(prompt_msg)
+            response = self._agent.get_response(prompt_msg)
         except Exception as e:
             print(f"Generation failed: {e}")
 
