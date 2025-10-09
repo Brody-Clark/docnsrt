@@ -24,7 +24,6 @@ class LlamaCppAgent(LlmAgentBase):
             max_tokens=1,
             stream=False,
         )
-        
 
     def get_response(self, message: str) -> str:
 

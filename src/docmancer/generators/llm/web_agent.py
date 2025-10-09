@@ -32,8 +32,8 @@ class WebAgent(LlmAgentBase):
         self._headers = settings.remote_api.headers or {}
         self._payload_template = settings.remote_api.payload_template or {}
         self._response_path = settings.remote_api.response_path or ""
-        self._prompt_placeholder = "${prompt}"        
-    
+        self._prompt_placeholder = "${prompt}"
+
     def _replace_prompt_in_obj(self, obj: any, prompt: str) -> any:
         """
         Recursively replace occurrences of the prompt placeholder in a JSON-like structure.
@@ -50,7 +50,7 @@ class WebAgent(LlmAgentBase):
         if isinstance(obj, list):
             return [self._replace_prompt_in_obj(v, prompt) for v in obj]
         return obj
-    
+
     def get_response(self, message: str) -> str:
         """
         Sends a message to the LLM API and returns the response.
@@ -70,7 +70,9 @@ class WebAgent(LlmAgentBase):
         payload = deepcopy(self._payload_template)
         payload = self._replace_prompt_in_obj(payload, message)
 
-        print(f"Sending request to LLM API at {self.api_endpoint} with payload: {payload}")
+        print(
+            f"Sending request to LLM API at {self.api_endpoint} with payload: {payload}"
+        )
         try:
             response = requests.post(
                 self.api_endpoint,
@@ -102,4 +104,3 @@ class WebAgent(LlmAgentBase):
 
         # Default: return json.dumps of the full response
         return json.dumps(response_json)
-    

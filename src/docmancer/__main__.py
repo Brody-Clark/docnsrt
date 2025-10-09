@@ -59,11 +59,8 @@ def main():
             print(f"  Provider: {remote_settings.provider}")
             print(f"  Track Tokens/Cost: {remote_settings.track_tokens_and_cost}")
 
-           
             if remote_settings.track_tokens_and_cost:
-                print(
-                    f"  User Max Prompt Tokens: {llm_config.max_tokens_per_response}"
-                )
+                print(f"  User Max Prompt Tokens: {llm_config.max_tokens_per_response}")
 
     except (FileNotFoundError, ValueError, RuntimeError, TypeError) as e:
         print(f"Configuration error: {e}", file=sys.stderr)
