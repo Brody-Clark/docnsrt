@@ -3,7 +3,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
 from datetime import datetime
-from docmancer.generators.llm.prompt import Prompt
+from docmancer.models.functional_models import ParameterModel, ExceptionModel
+from docmancer.models.function_summary import FunctionSummaryModel
 
 app = FastAPI()
 
@@ -36,8 +37,19 @@ class ChatResponse(BaseModel):
     usage: Usage
 
 def get_expected_json_response():
-    prompt = Prompt()
-    return prompt._get_expected_json_format()
+    model = FunctionSummaryModel(
+            summary="__summary__",
+            parameters=[
+                ParameterModel(
+                    name="__param__", type="__type__", desc="__desc__"
+                )
+            ],
+            return_description="__return_desc__",
+            remarks="__remarks__",
+            exceptions=[ExceptionModel(type="__type__", desc="__desc__")],
+            return_type="__return_type__",
+        )
+    return model.to_json(indent=2)
 
 @app.post("/v1/chat/completions")
 async def chat_completion(

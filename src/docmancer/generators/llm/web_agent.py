@@ -91,8 +91,12 @@ class WebAgent(LlmAgentBase):
             for p in parts:
                 if isinstance(node, dict):
                     node = node.get(p, {})
-                else:
-                    node = {}
+                elif p.isdigit() and isinstance(node, list):
+                    idx = int(p)
+                    if 0 <= idx < len(node):
+                        node = node[idx]
+                    else:
+                        node = {}
             # if final node is not a string, return its json representation
             return node if isinstance(node, str) else json.dumps(node)
 
