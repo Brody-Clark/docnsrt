@@ -82,9 +82,14 @@ class WebAgent(LlmAgentBase):
             )
             response.raise_for_status()
             response_json = response.json()
+        except requests.exceptions.HTTPError as http_err:
+            print(
+                f"HTTP error occurred: {http_err} - Response content: {response.text}"
+            )
+            return None
         except requests.exceptions.RequestException as e:
             print(f"Error occurred while making API request: {e}")
-            return json.dumps({"error": str(e)})
+            return None
 
         # Extract response based on response path if provided
         if self._response_path:
