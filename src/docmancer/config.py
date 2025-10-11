@@ -9,6 +9,7 @@ import re
 from dataclasses_json import dataclass_json
 from docmancer.core.styles import DocstringStyle
 
+
 class LLMType(Enum):
     """Enumeration of LLM types."""
 
@@ -136,9 +137,13 @@ def construct_env_var(loader, node):
         )
     return env_val
 
+
 VAR_PATTERN = re.compile(r"\${\s*vars\.([A-Za-z0-9_]+)\s*}")
 
-def load_project_config_yaml(path: str,) -> dict:
+
+def load_project_config_yaml(
+    path: str,
+) -> dict:
     """
     Load YAML using EnvVarLoader (!ENV support) and resolve ${...} placeholders.
     Returns a resolved dict (doesn't construct dataclasses).
@@ -149,6 +154,7 @@ def load_project_config_yaml(path: str,) -> dict:
     config = _resolve_vars(raw, vars_dict)
     return config
 
+
 def _resolve_vars(config, vars_dict):
     if isinstance(config, dict):
         return {k: _resolve_vars(v, vars_dict) for k, v in config.items()}
@@ -157,6 +163,6 @@ def _resolve_vars(config, vars_dict):
     elif isinstance(config, str):
         return VAR_PATTERN.sub(lambda m: vars_dict.get(m.group(1), ""), config)
     return config
-    
+
 
 EnvVarLoader.add_constructor("!ENV", construct_env_var)
