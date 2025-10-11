@@ -33,33 +33,70 @@ See [config.yaml](../config.yaml) for a template.
 
 ### Example
 
-YAML
+YAML for Local LLM (local .gguf file)
 
 ```yml
 # .docmancer.yaml
 style: PEP
 language: python
-files:
+files:                # Files to include by pattern
   - "src/**/*.py"
 functions:
   - "*"
-ignore_files:
+ignore_files:         # Files to ignore by pattern
   - "**/test_*.py"     
   - "**/__init__.py"     
   - "docs/"               
   - ".git/"        
-ignore_functions:
+ignore_functions:     # Functions to ignore by pattern
   - "main"               
   - "__init__"
   - "test_*"
 llm_config:
-  mode: LOCAL
+  mode: LOCAL         # LLM location (LOCAL or REMOTE_API)
   temperature: 0.5   
   local:
-    model_path: !ENV DOCMANCER_MODEL_PATH 
+    model_path: !ENV DOCMANCER_MODEL_PATH   # Path to .gguf file (using environment variable is optional)
     n_gpu_layers: -1 
     n_ctx: 4096        
     n_batch: 512 
+
+```
+
+YAML for Remote LLM (RESTful API)
+
+```yml
+# .docmancer.yaml
+style: PEP
+language: python
+files:                # Files to include by pattern
+  - "src/**/*.py"
+functions:
+  - "*"
+ignore_files:         # Files to ignore by pattern
+  - "**/test_*.py"     
+  - "**/__init__.py"     
+  - "docs/"               
+  - ".git/"        
+ignore_functions:     # Functions to ignore by pattern
+  - "main"               
+  - "__init__"
+  - "test_*"
+llm_config:
+  mode: REMOTE_API
+  temperature: 0.5   
+  remote_api:
+    provider: some-llm    #   
+    api_endpoint: "http://127.0.0.1:8000/v1/chat/completions" # API endpoint
+    headers:        # Optional headers in the request
+      Authorization: "Bearer ${vars.API_KEY}"
+    payload_template: # Define the json template key-value pairs your API expects
+      model: "llm-v1"
+      messages: 
+        - role: "user"
+          content: "${prompt}"
+      max_tokens: 1024
+    response_path: "choices.0.message.content"  # Path in the response where the result message is located
 
 ```
 
