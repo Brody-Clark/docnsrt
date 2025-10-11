@@ -31,6 +31,10 @@ ignore_functions:
   - "main"                # Often a simple entry point
   - "_private_helper_func" # Ignore functions with private conventions
 
+# === Reusable Variables ===
+vars:
+  API_KEY: !ENV SOME_API_KEY  # Store environment variable SOME_API_KEY in reusable variable API_KEY
+
 # === LLM Specific Configuration ===
 llm_config:
   # === LLM Mode Configuration ===
@@ -61,16 +65,16 @@ llm_config:
   # Uncomment and configure this section if you want to use a web-based LLM.
   remote_api:
     provider: some-llm
-    api_endpoint: "https://api.llm.com" # Example API endpoint
-    api_key: !ENV DOCMANCER_API_KEY     # Example env var name for API key
-    headers:
-      Authorization: "Bearer ${api_key}"
-      Custom-Header: "value"
-    payload_template:
+    api_endpoint: "https://api.llm.com"   # Example API endpoint
+    api_key: !ENV DOCMANCER_API_KEY       # Example env var name for API key
+    headers:                              # HTTP headers for the API request
+      Authorization: "Bearer ${API_KEY}"  # Example using reusable variable for API key
+      Custom-Header: "value"              # Any additional headers your API requires
+    payload_template:                     # Template for the JSON payload sent to the API
       model: "llm-v1"
       messages: "${messages}"
       max_tokens: 1024
-    response_path: "choices.0.message.content"
+    response_path: "choices.0.message.content"  # JSON path to extract the LLM's text response. Leave empty if the full response is plain text.
 
     # API Key Configuration:
     # Recommended: Use an environment variable for security.

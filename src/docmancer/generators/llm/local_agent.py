@@ -17,6 +17,8 @@ class LlamaCppAgent(LlmAgentBase):
             chat_format="chatml",
             n_ctx=self._settings.local.n_ctx,
             verbose=self._settings.local.log_verbose,
+            n_gpu_layers=self._settings.local.n_gpu_layers,
+            n_threads=self._settings.local.n_threads,
         )
         # Warm up the model
         self._llm(
@@ -27,6 +29,7 @@ class LlamaCppAgent(LlmAgentBase):
 
     def get_response(self, message: str) -> str:
 
+        print("Generating response from local LLM...")
         response = self._llm.create_chat_completion(
             messages=[
                 {

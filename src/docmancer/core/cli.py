@@ -4,7 +4,7 @@ from pathlib import Path
 import argparse
 import os
 import yaml
-from docmancer.config import DocmancerConfig, EnvVarLoader
+from docmancer.config import DocmancerConfig, load_project_config_yaml
 from docmancer.core.styles import (
     CANONICAL_STYLE_NAMES,
     LOWERCASE_STYLE_NAMES,
@@ -34,8 +34,7 @@ def load_config(config_path: str) -> dict:
         raise ValueError(f"Provided path is not a file: {config_path}")
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = yaml.load(f, Loader=EnvVarLoader)
+        config = load_project_config_yaml(config_path)
         return config
     except yaml.YAMLError as e:
         raise ValueError(

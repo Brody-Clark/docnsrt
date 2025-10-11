@@ -1,3 +1,6 @@
+vars:
+  API_KEY: !ENV API_KEY  # Store environment variable TEST_API_KEY in reusable variable API_KEY
+
 style: PEP
 language: python
 files:
@@ -14,12 +17,16 @@ llm_config:
   temperature: 0.25 
   max_tokens_per_response: 2048 
 
+  # local:
+  #   model_path: !ENV MODEL_PATH  # Path to local model
+  #   n_gpu_layers: 20
+  #   n_ctx: 30000
+  #   n_batch: 512
   remote_api:
     provider: some-llm
     api_endpoint: "http://127.0.0.1:8000/v1/chat/completions" # Example API endpoint
-    #api_key: 123 # !ENV DOCMANCER_API_KEY     # Example env var name for API key
     headers:
-      Authorization: "Bearer ${api_key}"
+      Authorization: "Bearer ${vars.API_KEY}"
       Custom-Header: "value"
     payload_template:
       model: "llm-v1"
