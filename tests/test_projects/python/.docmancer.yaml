@@ -1,6 +1,6 @@
 vars:
   API_KEY: !ENV API_KEY  # Store environment variable TEST_API_KEY in reusable variable API_KEY
-
+log_level: INFO
 style: PEP
 language: python
 files:

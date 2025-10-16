@@ -13,6 +13,7 @@ Docmancer supports several options for documentation generation.
 | `--write`                  | Writes generated strings to files                           | N/A     |
 | `--config <path>`          | Path to config file                                         | `.docmancer.yaml`     |
 | `--file <path>`            | Glob pattern path to a specific file to document            | `*`  |
+| `--log-level`              | Level of logging (DEBUG, INFOG, WARNING, ERROR)            | `INFO`|
 | `--ignore-files <name...>` | Specific file names or glob pattern to ignore (space-separated list) | N/A |
 | `--functions <name...>`    | Specific function names or glob pattern to target (space-separated list) | `[*]`    |
 | `--ignore-functions <name...>`| Specific function names or glob pattern to ignore (space-separated list) | N/A   |
@@ -44,6 +45,7 @@ YAML for Local LLM (local .gguf file)
 ```yml
 # .docmancer.yaml
 style: PEP
+log_level: INFO
 language: python
 files:                # Files to include by pattern
   - "src/**/*.py"
@@ -75,6 +77,7 @@ YAML for Remote LLM (RESTful API)
 # .docmancer.yaml
 style: PEP
 language: python
+log_level: INFO
 files:                # Files to include by pattern
   - "src/**/*.py"
 functions:

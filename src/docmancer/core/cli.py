@@ -277,7 +277,7 @@ def parse_args() -> DocmancerConfig:
     )
     parser.add_argument(
         "--log-level",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         help="Logging level (overrides DOCMANCER_LOG_LEVEL env var)",
         default=None,
     )
