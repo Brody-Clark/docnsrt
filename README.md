@@ -1,3 +1,6 @@
+> [!NOTE]
+> This project is a work in progress. As such, some features may be missing or incomplete
+
 <h1 align="center">Docmancer</h1><h2 align="center"> Documentation Generation Framework</h2>
 
 <p align="center">
