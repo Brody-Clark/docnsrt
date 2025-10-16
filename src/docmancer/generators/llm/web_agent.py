@@ -1,11 +1,13 @@
 """Web-based LLM agent."""
 
+import logging
 import json
 import requests
 from copy import deepcopy
 from docmancer.generators.llm.llm_agent_base import LlmAgentBase
 from docmancer.config import LLMConfig
 
+logger = logging.getLogger(__name__)
 
 class WebAgent(LlmAgentBase):
     """
@@ -70,7 +72,7 @@ class WebAgent(LlmAgentBase):
         payload = deepcopy(self._payload_template)
         payload = self._replace_prompt_in_obj(payload, message)
 
-        print(
+        logger.info(
             f"Sending request to LLM API at {self.api_endpoint} with payload: {payload}"
         )
         try:
@@ -83,12 +85,12 @@ class WebAgent(LlmAgentBase):
             response.raise_for_status()
             response_json = response.json()
         except requests.exceptions.HTTPError as http_err:
-            print(
+            logger.exception(
                 f"HTTP error occurred: {http_err} - Response content: {response.text}"
             )
             return None
         except requests.exceptions.RequestException as e:
-            print(f"Error occurred while making API request: {e}")
+            logger.exception(f"Error occurred while making API request: {e}")
             return None
 
         # Extract response based on response path if provided

@@ -1,7 +1,7 @@
 """This module contains functions to display text to the CLI."""
 
 from enum import Enum
-import os
+import logging
 import io
 import sys
 import threading
@@ -18,6 +18,7 @@ from prompt_toolkit.shortcuts import prompt
 from docmancer.models.documentation_model import DocumentationModel
 from docmancer.utils import platform_utils
 
+logger = logging.getLogger(__name__)
 
 class UserResponse(Enum):
     """
@@ -91,7 +92,7 @@ class Presenter:
                         doc.new_docstring.lines
                     )
                 except Exception as e:
-                    print(e)
+                    logger.info(e)
                 continue
 
     def edit_text_with_editor(self, initial_text: List[str]) -> List[str]:

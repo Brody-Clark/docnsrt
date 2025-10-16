@@ -4,6 +4,7 @@ Main entry point for the Docmancer application.
 
 import os
 import sys
+import logging
 from docmancer.core.cli import parse_args
 from docmancer.core.pipeline import DocumentationPipeline
 from docmancer.generators.documentation_generators import (
@@ -14,15 +15,20 @@ from docmancer.generators.documentation_generators import (
 from docmancer.generators.llm.llm_agent_factory import LlmFactory
 from docmancer.formatter.formatter_factory import FormatterFactory
 from docmancer.core.presenter import Presenter
+from docmancer.core.logging_config import configure_logging
 from docmancer.parser.parser_factory import ParserFactory, ParserBase
 from docmancer.config import DocmancerConfig, LLMType
 
+logger = logging.getLogger(__name__)
 
 def main():
     """
     Main entry point for the Docmancer application.
     """
     config: DocmancerConfig = parse_args()
+
+    configure_logging(config.log_level)
+
     if not os.path.isdir(config.project_dir):
         raise FileNotFoundError("Project directory does not exist.")
 
@@ -34,9 +40,9 @@ def main():
             raise ValueError("LLM configuration is missing in the config file.")
         llm_mode_enum = llm_config.get_mode_enum()
 
-        print(f"\nLLM Mode: {llm_mode_enum.value} (Enum: {llm_mode_enum.name})")
-        print(f"  Temperature: {llm_config.temperature}")
-        print(f"  Max Tokens per Response: {llm_config.max_tokens_per_response}")
+        logger.info(f"\nLLM Mode: {llm_mode_enum.value} (Enum: {llm_mode_enum.name})")
+        logger.info(f"  Temperature: {llm_config.temperature}")
+        logger.info(f"  Max Tokens per Response: {llm_config.max_tokens_per_response}")
 
         if llm_mode_enum == LLMType.LOCAL:
             if not llm_config.local:
@@ -44,8 +50,8 @@ def main():
                     "Config error: 'local' settings missing for LOCAL mode."
                 )
             local_settings = llm_config.local
-            print(f"  Model Path: {local_settings.model_path}")
-            print(f"  GPU Layers: {local_settings.n_gpu_layers}")
+            logger.info(f"  Model Path: {local_settings.model_path}")
+            logger.info(f"  GPU Layers: {local_settings.n_gpu_layers}")
             # Use these settings to initialize the local LLM agent
             # llm_agent = LLMAgent(mode=llm_mode_enum, config=local_settings)
 
@@ -55,18 +61,18 @@ def main():
                     "Config error: 'remote_api' settings missing for REMOTE_API mode."
                 )
             remote_settings = llm_config.remote_api
-            print(f"  Endpoint: {remote_settings.api_endpoint}")
-            print(f"  Provider: {remote_settings.provider}")
-            print(f"  Track Tokens/Cost: {remote_settings.track_tokens_and_cost}")
+            logger.info(f"  Endpoint: {remote_settings.api_endpoint}")
+            logger.info(f"  Provider: {remote_settings.provider}")
+            logger.info(f"  Track Tokens/Cost: {remote_settings.track_tokens_and_cost}")
 
             if remote_settings.track_tokens_and_cost:
-                print(f"  User Max Prompt Tokens: {llm_config.max_tokens_per_response}")
+                logger.info(f"  User Max Prompt Tokens: {llm_config.max_tokens_per_response}")
 
     except (FileNotFoundError, ValueError, RuntimeError, TypeError) as e:
-        print(f"Configuration error: {e}", file=sys.stderr)
-        print("You will not be able to use LLM-based features.", file=sys.stderr)
+        logger.exception(f"Configuration error: {e}", file=sys.stderr)
+        logger.error("You will not be able to use LLM-based features.", file=sys.stderr)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}", file=sys.stderr)
+        logger.error(f"An unexpected error occurred: {e}", file=sys.stderr)
         sys.exit(1)
 
     presenter = Presenter()
@@ -103,7 +109,7 @@ def get_generator(config: DocmancerConfig) -> GeneratorBase:
             agent_factory = LlmFactory()
             agent = agent_factory.get_agent(llm_config=config.llm_config)
         except NotImplementedError as e:
-            print(f"Error determining LLM agent type: {e}")
+            logger.exception(f"Error determining LLM agent type: {e}")
         generator = LlmGenerator(agent=agent)
     return generator
 

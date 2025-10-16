@@ -76,12 +76,13 @@ llm_config:
       max_tokens: 1024
     response_path: "choices.0.message.content"  # JSON path to extract the LLM's text response. Leave empty if the full response is plain text.
 
+    # IMPORTANT: if respons_path requires indices (e.g., choices[0]), use dot notation with indices like above.
+
     # API Key Configuration:
     # Recommended: Use an environment variable for security.
     # Docmancer will look for a variable with this name.
     # Example: export OPENAI_API_KEY="sk-..." in your shell.
-    # api_key_env_var: "API_KEY_ENV_VAR" # change this to you api key env var
-    # api_key_env_var: ~ # Set to ~ (null) if no API key is required (e.g., some internal servers)
+    # api_key_env_var: !ENV API_KEY_ENV_VAR # change this to you api key env var
 
     # TODO: Cost and Token Tracking:
     # Set to 'true' to enable pre-run token estimation and enforce user-defined limits.

@@ -1,5 +1,5 @@
 """This module provides function summary generators"""
-
+import logging
 from abc import abstractmethod, ABC
 from docmancer.models.functional_models import ExceptionModel, ParameterModel
 import docmancer.utils.json_utils as ju
@@ -8,6 +8,7 @@ from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
 from docmancer.generators.llm.prompt import Prompt
 
+logger = logging.getLogger(__name__)
 
 class GeneratorBase(ABC):
     @abstractmethod
@@ -60,13 +61,13 @@ class LlmGenerator(GeneratorBase):
             prompt_msg = self._prompt.create(context)
             response = self._agent.get_response(prompt_msg)
         except Exception as e:
-            print(f"Generation failed: {e}")
+            logger.exception(f"Generation failed: {e}")
 
         if not response:
-            print(
+            raise Exception(
                 "No response from LLM. Please ensure configuration parameters are correct and model is properly initialized."
             )
-            return None
+            
 
         # Parse response into Function Summary Model
         try:
@@ -74,5 +75,6 @@ class LlmGenerator(GeneratorBase):
             func_summary_model = FunctionSummaryModel.from_dict(func_summary_json)
             return func_summary_model
         except ValueError:
-            print("ERROR")
-            return None
+            raise ValueError(
+                f"Failed to parse LLM response into FunctionSummaryModel. Response was: {response}"
+            )

@@ -1,9 +1,11 @@
 """Local LLM agent for inference using LlamaCpp."""
 
+import logging
 from llama_cpp import Llama
 from docmancer.generators.llm.llm_agent_base import LlmAgentBase
 from docmancer.config import LLMConfig
 
+logger = logging.getLogger(__name__)
 
 class LlamaCppAgent(LlmAgentBase):
     """
@@ -29,7 +31,7 @@ class LlamaCppAgent(LlmAgentBase):
 
     def get_response(self, message: str) -> str:
 
-        print("Generating response from local LLM...")
+        logger.info("Generating response from local LLM...")
         response = self._llm.create_chat_completion(
             messages=[
                 {

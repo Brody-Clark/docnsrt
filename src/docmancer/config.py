@@ -88,6 +88,7 @@ class DocmancerConfig:
     check: bool = False
     write: bool = True
     force_all: bool = False
+    log_level: str = "INFO"
 
     def get_default_style_enum(self) -> DocstringStyle:
         """Returns the default docstring style enum."""

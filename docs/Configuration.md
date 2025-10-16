@@ -19,12 +19,18 @@ Docmancer supports several options for documentation generation.
 | `--project-dir <path>`     | Path to project source.                                     | Current Working Directory |
 | `--language <language>`    | Language of source files.                                   | N/A |
 | `--style <style>`          | Genereated docstring format: *See supported formats*        | `None`    |
-| `--no-summary`  | Skips generating summary. Creates placeholder docstrings.   | N/A |
-| `--force-all`    | Skips prompting for each generated docstring. Force writes to files.    | N/A |
-| `--model-type <backend>`   | Type of LLM to use (local, web)                             | N/A |
-| `--model-local-path <path>`| File path of .gguf file if model-type is 'local'            | N/A |
-| `--model-web-api <url>`    | URL of remote model if model-type is 'web'. _Currently Unsupported_   | N/A |
-| `-h, --help`               | Show help message and exit                                  | N/A     |
+| `--no-summary`             | Skips generating summary. Creates placeholder docstrings.   | N/A |
+| `--force-all`              | Skips prompting for each generated docstring. Force writes to files.    | N/A |
+| `--llm-config-mode <backend>`   | Type of LLM to use (local, remote)                             | N/A |
+| `--model-local-path <path>`| File path of .gguf file if llm-config-mode is 'local'            | N/A |
+| `--remote-endpoint <url>`     | URL of remote model if llm-config-mode is 'remote'.             | N/A |
+| `--remote-provider`           | Remote API provider name             | N/A |
+| `--remote-response-path <url>`     | Where to extract response in JSON (dotted path).             | N/A |
+| `--remote-header`             | Header override (repeatable). Format: Key=Value.             | N/A |
+| `--remote-header-json`     | JSON/YAML string or file path for headers dict.             | N/A |
+| `--remote-payload`     | SON/YAML string or file path for payload template.             | N/A |
+| `--remote-payload-file`     | lternate explicit file path for payload template.             | N/A |
+| `-h, --help`               | Show help message and exit                                   | N/A     |
 
 ## Configuration File
 
@@ -82,15 +88,17 @@ ignore_functions:     # Functions to ignore by pattern
   - "main"               
   - "__init__"
   - "test_*"
+vars:
+  API_KEY: !ENV MY_API_KEY_ENV   # set API_KEY in the vars section to be reused below
 llm_config:
   mode: REMOTE_API
   temperature: 0.5   
   remote_api:
-    provider: some-llm    #   
+    provider: some-llm
     api_endpoint: "http://127.0.0.1:8000/v1/chat/completions" # API endpoint
     headers:        # Optional headers in the request
       Authorization: "Bearer ${vars.API_KEY}"
-    payload_template: # Define the json template key-value pairs your API expects
+    payload_template: # Define the json template key-value pairs that your API expects
       model: "llm-v1"
       messages: 
         - role: "user"
