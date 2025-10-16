@@ -2,12 +2,15 @@
 This module contains the prompt class for providing prompts to the LLM summary generator.
 """
 
+import logging
 from typing import List
 from pathlib import Path
 import yaml
 from docmancer.models.function_context import FunctionContextModel
 from docmancer.models.function_summary import FunctionSummaryModel
 from docmancer.models.functional_models import ParameterModel, ExceptionModel
+
+logger = logging.getLogger(__name__)
 
 
 class Prompt:
@@ -65,7 +68,7 @@ class Prompt:
             with open(Path("prompt.yaml"), encoding="utf-8") as f:
                 config = yaml.safe_load(f)
         except FileNotFoundError:
-            print("No valid prompt.yaml file found for LLM.")
+            logger.exception("No valid prompt.yaml file found for LLM.")
 
         prompt_template = config["prompt_template"]
         return prompt_template

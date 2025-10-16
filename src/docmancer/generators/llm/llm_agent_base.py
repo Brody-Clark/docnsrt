@@ -5,7 +5,7 @@ class LlmAgentBase(ABC):
     """Base class for LLM agents."""
 
     @abstractmethod
-    def send_message(self, message: str) -> str:
+    def get_response(self, message: str) -> str:
         """Sends a message to the LLM and returns the response.
 
         Args:

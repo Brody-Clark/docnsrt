@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Optional, List
 from dataclasses import dataclass, field
 import yaml
+import re
 from dataclasses_json import dataclass_json
 from docmancer.core.styles import DocstringStyle
 
@@ -27,20 +28,20 @@ class LocalLLMSettings:
     n_batch: int = 560
     n_threads: Optional[int] = None
     main_gpu: Optional[int] = None
-    temperature: float = 0.7
     log_verbose: bool = False
 
 
 @dataclass_json
 @dataclass
-class RemoteApiLLMSettings:
+class RemoteLLMSettings:
     """Settings for interacting with a remote LLM API."""
 
-    base_url: str
-    model_name: str
-    api_key_env_var: Optional[str] = None
+    provider: str
+    api_endpoint: str
+    headers: Optional[dict] = field(default_factory=dict)
+    payload_template: Optional[dict] = field(default_factory=dict)
+    response_path: str = ""
     track_tokens_and_cost: bool = True
-    user_max_prompt_tokens: Optional[int] = None
 
 
 @dataclass_json
@@ -50,11 +51,10 @@ class LLMConfig:
 
     mode: str = ""
     temperature: float = 0.7
-    max_tokens_per_response: int = 2048
-
+    max_tokens_per_response: int = 1024
     # Nested settings based on mode
     local: Optional[LocalLLMSettings] = None
-    remote_api: Optional[RemoteApiLLMSettings] = None
+    remote_api: Optional[RemoteLLMSettings] = None
 
     def get_mode_enum(self) -> LLMType:
         """
@@ -88,6 +88,7 @@ class DocmancerConfig:
     check: bool = False
     write: bool = True
     force_all: bool = False
+    log_level: str = "INFO"
 
     def get_default_style_enum(self) -> DocstringStyle:
         """Returns the default docstring style enum."""
@@ -136,6 +137,33 @@ def construct_env_var(loader, node):
             f"and no default value was provided for '!ENV {value}' in config."
         )
     return env_val
+
+
+VAR_PATTERN = re.compile(r"\${\s*vars\.([A-Za-z0-9_]+)\s*}")
+
+
+def load_project_config_yaml(
+    path: str,
+) -> dict:
+    """
+    Load YAML using EnvVarLoader (!ENV support) and resolve ${...} placeholders.
+    Returns a resolved dict (doesn't construct dataclasses).
+    """
+    with open(path, "r", encoding="utf-8") as f:
+        raw = yaml.load(f, Loader=EnvVarLoader) or {}
+    vars_dict = raw.get("vars", {})
+    config = _resolve_vars(raw, vars_dict)
+    return config
+
+
+def _resolve_vars(config, vars_dict):
+    if isinstance(config, dict):
+        return {k: _resolve_vars(v, vars_dict) for k, v in config.items()}
+    elif isinstance(config, list):
+        return [_resolve_vars(v, vars_dict) for v in config]
+    elif isinstance(config, str):
+        return VAR_PATTERN.sub(lambda m: vars_dict.get(m.group(1), ""), config)
+    return config
 
 
 EnvVarLoader.add_constructor("!ENV", construct_env_var)

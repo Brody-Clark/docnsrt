@@ -2,6 +2,7 @@
 Main processing pipeline for documentation generation
 """
 
+import logging
 from typing import List
 from docmancer.models.functional_models import DocstringModel
 from docmancer.parser.parser_base import ParserBase
@@ -12,6 +13,8 @@ from docmancer.models.documentation_model import DocumentationModel
 from docmancer.models.docstring_models import DocstringLocation
 from docmancer.config import DocmancerConfig
 from docmancer.utils import file_utils
+
+logger = logging.getLogger(__name__)
 
 
 class DocumentationPipeline:

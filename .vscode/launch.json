@@ -31,7 +31,8 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
-                "DOCMANCER_MODEL_PATH": ""
+                "DOCMANCER_MODEL_PATH": "",
+                "API_KEY": "sk_test_value"
             }
         },
         {
