@@ -31,6 +31,7 @@ def _parse_kv_pairs(kv_list: Optional[List[str]]) -> Dict[str, str]:
         out[k.strip()] = v.strip().strip('"').strip("'")
     return out
 
+
 def _parse_json_or_file(value: Optional[str]) -> Optional[Any]:
     """
     Accept either:
@@ -53,6 +54,7 @@ def _parse_json_or_file(value: Optional[str]) -> Optional[Any]:
             return yaml.safe_load(text)
         except Exception:
             return None
+
 
 def load_config(config_path: str) -> dict:
     """Loads and parses a YAML configuration file.
@@ -274,34 +276,32 @@ def parse_args() -> DocmancerConfig:
         help="Filepath to .gguf file for local model",
     )
     parser.add_argument(
-    "--log-level",
-    choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-    help="Logging level (overrides DOCMANCER_LOG_LEVEL env var)",
-    default=None,
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Logging level (overrides DOCMANCER_LOG_LEVEL env var)",
+        default=None,
     )
 
-    parser.add_argument("--remote-endpoint", 
-                        help="Remote LLM API endpoint URL"
-                        )
-    parser.add_argument("--remote-provider", 
-                        help="Remote API provider name"
-                        )
-    parser.add_argument("--remote-response-path", 
-                        help="Where to extract response in JSON (dotted path)"
-                        )
-    parser.add_argument("--remote-header", 
-                        action="append",
-                        help="Header override (repeatable). Format: Key=Value"
-                        )
-    parser.add_argument("--remote-headers-json", 
-                        help="JSON/YAML string or file path for headers dict"
-                        )
-    parser.add_argument("--remote-payload",
-                        help="JSON/YAML string or file path for payload template"
-                        )
-    parser.add_argument("--remote-payload-file", 
-                        help="alternate explicit file path for payload template"
-                        )
+    parser.add_argument("--remote-endpoint", help="Remote LLM API endpoint URL")
+    parser.add_argument("--remote-provider", help="Remote API provider name")
+    parser.add_argument(
+        "--remote-response-path", help="Where to extract response in JSON (dotted path)"
+    )
+    parser.add_argument(
+        "--remote-header",
+        action="append",
+        help="Header override (repeatable). Format: Key=Value",
+    )
+    parser.add_argument(
+        "--remote-headers-json", help="JSON/YAML string or file path for headers dict"
+    )
+    parser.add_argument(
+        "--remote-payload", help="JSON/YAML string or file path for payload template"
+    )
+    parser.add_argument(
+        "--remote-payload-file",
+        help="alternate explicit file path for payload template",
+    )
 
     # Parse arguments after defaults are set
     args = parser.parse_args()
@@ -367,7 +367,9 @@ def parse_args() -> DocmancerConfig:
         and app_config["llm_config_mode"] == "local"
         and not app_config["model_local_path"]
     ):
-        parser.error("--model-local-path is required when --llm-config-mode is 'local'.")
+        parser.error(
+            "--model-local-path is required when --llm-config-mode is 'local'."
+        )
     if (
         "llm_config_mode" in app_config
         and app_config["llm_config_mode"] == "remote"
@@ -403,7 +405,11 @@ def parse_args() -> DocmancerConfig:
     # normalize existing headers
     existing_headers = remote.get("headers") or {}
     # merge: existing <- headers_from_json <- headers_from_kv  (kv wins)
-    merged_headers = {**existing_headers, **(headers_from_json or {}), **headers_from_kv}
+    merged_headers = {
+        **existing_headers,
+        **(headers_from_json or {}),
+        **headers_from_kv,
+    }
     if merged_headers:
         remote["headers"] = merged_headers
 
@@ -420,7 +426,7 @@ def parse_args() -> DocmancerConfig:
             except Exception:
                 payload = None
     if payload is not None:
-        remote["payload_template"] = payload    
+        remote["payload_template"] = payload
 
     if args.log_level:
         config["log_level"] = args.log_level

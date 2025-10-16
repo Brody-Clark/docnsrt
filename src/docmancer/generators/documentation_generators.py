@@ -1,4 +1,5 @@
 """This module provides function summary generators"""
+
 import logging
 from abc import abstractmethod, ABC
 from docmancer.models.functional_models import ExceptionModel, ParameterModel
@@ -9,6 +10,7 @@ from docmancer.models.function_summary import FunctionSummaryModel
 from docmancer.generators.llm.prompt import Prompt
 
 logger = logging.getLogger(__name__)
+
 
 class GeneratorBase(ABC):
     @abstractmethod
@@ -67,7 +69,6 @@ class LlmGenerator(GeneratorBase):
             raise Exception(
                 "No response from LLM. Please ensure configuration parameters are correct and model is properly initialized."
             )
-            
 
         # Parse response into Function Summary Model
         try:

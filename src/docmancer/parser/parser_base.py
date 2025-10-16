@@ -10,6 +10,7 @@ from docmancer.models.function_context import FunctionContextModel
 
 logger = logging.getLogger(__name__)
 
+
 class ParserBase(ABC):
     """
     Base class for all parsers.

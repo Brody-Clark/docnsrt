@@ -9,6 +9,7 @@ from docmancer.config import LLMConfig
 
 logger = logging.getLogger(__name__)
 
+
 class WebAgent(LlmAgentBase):
     """
     Web-based LLM agent.

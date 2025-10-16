@@ -1,6 +1,7 @@
 """
 This module contains the prompt class for providing prompts to the LLM summary generator.
 """
+
 import logging
 from typing import List
 from pathlib import Path
@@ -10,6 +11,7 @@ from docmancer.models.function_summary import FunctionSummaryModel
 from docmancer.models.functional_models import ParameterModel, ExceptionModel
 
 logger = logging.getLogger(__name__)
+
 
 class Prompt:
     """LLM Prompt class for generating prompts based on function context."""

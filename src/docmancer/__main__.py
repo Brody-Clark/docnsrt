@@ -21,6 +21,7 @@ from docmancer.config import DocmancerConfig, LLMType
 
 logger = logging.getLogger(__name__)
 
+
 def main():
     """
     Main entry point for the Docmancer application.
@@ -66,7 +67,9 @@ def main():
             logger.info(f"  Track Tokens/Cost: {remote_settings.track_tokens_and_cost}")
 
             if remote_settings.track_tokens_and_cost:
-                logger.info(f"  User Max Prompt Tokens: {llm_config.max_tokens_per_response}")
+                logger.info(
+                    f"  User Max Prompt Tokens: {llm_config.max_tokens_per_response}"
+                )
 
     except (FileNotFoundError, ValueError, RuntimeError, TypeError) as e:
         logger.exception(f"Configuration error: {e}", file=sys.stderr)

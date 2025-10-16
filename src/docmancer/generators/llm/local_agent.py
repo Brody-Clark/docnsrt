@@ -7,6 +7,7 @@ from docmancer.config import LLMConfig
 
 logger = logging.getLogger(__name__)
 
+
 class LlamaCppAgent(LlmAgentBase):
     """
     LLM-based agent for local inference using LlamaCpp.

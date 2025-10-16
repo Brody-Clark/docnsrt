@@ -20,6 +20,7 @@ from docmancer.utils import platform_utils
 
 logger = logging.getLogger(__name__)
 
+
 class UserResponse(Enum):
     """
     Enumeration for user responses.
