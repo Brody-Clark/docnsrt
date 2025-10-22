@@ -1,11 +1,14 @@
 """Base class for all parsers."""
 
+import logging
 from abc import ABC, abstractmethod
 from typing import List
 import os
 import fnmatch
 import docmancer.utils.file_utils as fu
 from docmancer.models.function_context import FunctionContextModel
+
+logger = logging.getLogger(__name__)
 
 
 class ParserBase(ABC):
@@ -102,7 +105,7 @@ class ParserBase(ABC):
             code = fu.read_file_to_bytes(file.absolute())
             module_name = os.path.splitext(os.path.basename(file.absolute()))[0]
         except OSError as e:
-            print(e)
+            logger.exception(f"Error reading file {file}: {e}")
             return None
         tree = self._parser.parse(code)
         nodes = self.filter_functions(tree, code, include_patterns, ignore_patterns)

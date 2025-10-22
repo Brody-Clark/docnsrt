@@ -1,8 +1,11 @@
 """Local LLM agent for inference using LlamaCpp."""
 
+import logging
 from llama_cpp import Llama
 from docmancer.generators.llm.llm_agent_base import LlmAgentBase
-from docmancer.config import LocalLLMSettings
+from docmancer.config import LLMConfig
+
+logger = logging.getLogger(__name__)
 
 
 class LlamaCppAgent(LlmAgentBase):
@@ -10,18 +13,27 @@ class LlamaCppAgent(LlmAgentBase):
     LLM-based agent for local inference using LlamaCpp.
     """
 
-    def __init__(self, settings: LocalLLMSettings):
+    def __init__(self, settings: LLMConfig):
         self._settings = settings
-
-    def send_message(self, message: str) -> str:
-
-        llm = Llama(
-            model_path=self._settings.model_path,
+        self._llm = Llama(
+            model_path=self._settings.local.model_path,
             chat_format="chatml",
-            n_ctx=self._settings.n_ctx,
-            verbose=self._settings.log_verbose,
+            n_ctx=self._settings.local.n_ctx,
+            verbose=self._settings.local.log_verbose,
+            n_gpu_layers=self._settings.local.n_gpu_layers,
+            n_threads=self._settings.local.n_threads,
         )
-        response = llm.create_chat_completion(
+        # Warm up the model
+        self._llm(
+            prompt="hello",
+            max_tokens=1,
+            stream=False,
+        )
+
+    def get_response(self, message: str) -> str:
+
+        logger.info("Generating response from local LLM...")
+        response = self._llm.create_chat_completion(
             messages=[
                 {
                     "role": "system",

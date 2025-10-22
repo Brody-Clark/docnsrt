@@ -1,9 +1,13 @@
 """Web-based LLM agent."""
 
-from typing import Dict, Any, Optional
+import logging
 import json
-import httpx
+import requests
+from copy import deepcopy
 from docmancer.generators.llm.llm_agent_base import LlmAgentBase
+from docmancer.config import LLMConfig
+
+logger = logging.getLogger(__name__)
 
 
 class WebAgent(LlmAgentBase):
@@ -11,7 +15,7 @@ class WebAgent(LlmAgentBase):
     Web-based LLM agent.
     """
 
-    def __init__(self, api_endpoint: str, api_key: Optional[str] = None):
+    def __init__(self, settings: LLMConfig, timeout_seconds: int = 60):
         """
         Initializes the WebAgent with the LLM API endpoint and an optional API key.
 
@@ -23,55 +27,88 @@ class WebAgent(LlmAgentBase):
             api_key (Optional[str]): The API key for authentication, if required by the endpoint.
                                       Can be None if the endpoint doesn't require one.
         """
-        if not api_endpoint:
+        if not settings.remote_api.api_endpoint:
             raise ValueError("API endpoint cannot be empty.")
-        self.api_endpoint = api_endpoint
-        self.api_key = api_key
-        # Use httpx.AsyncClient for persistent connections and better performance
-        # across multiple requests.
-        self._client = httpx.AsyncClient()
+        self.api_endpoint = settings.remote_api.api_endpoint
+        self._timeout_seconds = timeout_seconds
+        self.temperature = settings.temperature
+        self._headers = settings.remote_api.headers or {}
+        self._payload_template = settings.remote_api.payload_template or {}
+        self._response_path = settings.remote_api.response_path or ""
+        self._prompt_placeholder = "${prompt}"
 
-    async def _make_api_request(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def _replace_prompt_in_obj(self, obj: any, prompt: str) -> any:
         """
-        Internal method to make the actual HTTP POST request to the LLM API.
+        Recursively replace occurrences of the prompt placeholder in a JSON-like structure.
+
+        Supports nested dicts, lists and strings (including strings that contain the placeholder).
+        Leaves other types untouched.
+        """
+        if isinstance(obj, str):
+            if self._prompt_placeholder in obj:
+                return obj.replace(self._prompt_placeholder, prompt)
+            return obj
+        if isinstance(obj, dict):
+            return {k: self._replace_prompt_in_obj(v, prompt) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [self._replace_prompt_in_obj(v, prompt) for v in obj]
+        return obj
+
+    def get_response(self, message: str) -> str:
+        """
+        Sends a message to the LLM API and returns the response.
 
         Args:
-            payload (Dict[str, Any]): The JSON payload to send to the API.
-                                       This structure depends heavily on the LLM API.
+            message (str): The message to send to the LLM.
 
         Returns:
-            Dict[str, Any]: The JSON response from the API.
+            str: The response from the LLM as a string.
 
         Raises:
             httpx.HTTPStatusError: If the API returns a non-2xx status code.
             httpx.RequestError: For network-related errors.
             json.JSONDecodeError: If the response is not valid JSON.
         """
-        headers = {"Content-Type": "application/json"}
-        if self.api_key:
-            # Common header for Bearer token authentication (e.g., OpenAI, many others)
-            headers["Authorization"] = f"Bearer {self.api_key}"
-            # Some APIs might use different headers, e.g., "X-API-Key"
+        # Build payload by substituting prompt placeholder in a deepcopy of the template
+        payload = deepcopy(self._payload_template)
+        payload = self._replace_prompt_in_obj(payload, message)
 
+        logger.info(
+            f"Sending request to LLM API at {self.api_endpoint} with payload: {payload}"
+        )
         try:
-            response = await self._client.post(
+            response = requests.post(
                 self.api_endpoint,
-                headers=headers,
+                headers=self._headers,
                 json=payload,
-                timeout=60.0,  # Set a reasonable timeout for LLM responses
+                timeout=self._timeout_seconds,
             )
-            response.raise_for_status()  # Raises HTTPStatusError for 4xx/5xx responses
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            print(
-                f"API request failed with status {e.response.status_code}: {e.response.text}"
+            response.raise_for_status()
+            response_json = response.json()
+        except requests.exceptions.HTTPError as http_err:
+            logger.exception(
+                f"HTTP error occurred: {http_err} - Response content: {response.text}"
             )
-            raise
-        except httpx.RequestError as e:
-            print(f"An error occurred while requesting {e.request.url!r}: {e}")
-            raise
-        except json.JSONDecodeError as e:
-            print(
-                f"Failed to decode JSON response: {e}. Response text: {response.text}"
-            )
-            raise
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.exception(f"Error occurred while making API request: {e}")
+            return None
+
+        # Extract response based on response path if provided
+        if self._response_path:
+            parts = self._response_path.split(".")
+            node = response_json
+            for p in parts:
+                if isinstance(node, dict):
+                    node = node.get(p, {})
+                elif p.isdigit() and isinstance(node, list):
+                    idx = int(p)
+                    if 0 <= idx < len(node):
+                        node = node[idx]
+                    else:
+                        node = {}
+            # if final node is not a string, return its json representation
+            return node if isinstance(node, str) else json.dumps(node)
+
+        # Default: return json.dumps of the full response
+        return json.dumps(response_json)

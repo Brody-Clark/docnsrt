@@ -60,10 +60,14 @@ See the [Poetry installation docs](https://python-poetry.org/docs/#installing-wi
     poetry install
     ```
 
-3. Activate the Virtual Environment
+3. Print the Activate.ps1 Script for the Virtual Environment
 
     ```bash
     poetry env activate
+    ```
+4. Run the Activate Script for the Virtaul Environment
+    ```bash
+    "<Path_To_VirtualEnv>\Scripts\Activate.ps1"
     ```
 > [!NOTE]
 > On Windows you may need to relax Powershell policies regarding script execution. To do this, you can run:
@@ -134,6 +138,10 @@ This project includes recommended VS Code configurations for debugging and testi
   - Any file with the Poetry environment
 
 To start debugging, open the Run & Debug sidebar and select the desired configuration.
+
+#### Testing project files
+
+Each supported language should have a corresponding test_projects folder with test source files, prompt.yaml, and .docmancer.yaml. This makes it easier to debug and test how the tool works on actual source files. VSCode's configurations can allow modification of execution arguments and environment variables to make debugging different setups easier. 
 
 ### Testing
 

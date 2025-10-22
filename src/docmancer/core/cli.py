@@ -4,13 +4,56 @@ from pathlib import Path
 import argparse
 import os
 import yaml
-from docmancer.config import DocmancerConfig, EnvVarLoader
+import json
+from typing import Optional, List, Dict, Any
+from docmancer.config import DocmancerConfig, load_project_config_yaml
 from docmancer.core.styles import (
     CANONICAL_STYLE_NAMES,
     LOWERCASE_STYLE_NAMES,
     DEFAULT_STYLE_NAME,
 )
 from docmancer.core.languages import CANONICAL_LANGUAGE_NAMES
+
+
+def _parse_kv_pairs(kv_list: Optional[List[str]]) -> Dict[str, str]:
+    """Parse repeated key=value args into a dict. Accepts 'Key=Value' or 'Key:Value'."""
+    if not kv_list:
+        return {}
+    out = {}
+    for item in kv_list:
+        if "=" in item:
+            k, v = item.split("=", 1)
+        elif ":" in item:
+            k, v = item.split(":", 1)
+        else:
+            # treat as key with empty value
+            k, v = item, ""
+        out[k.strip()] = v.strip().strip('"').strip("'")
+    return out
+
+
+def _parse_json_or_file(value: Optional[str]) -> Optional[Any]:
+    """
+    Accept either:
+      - a JSON/YAML inline string: '{"a":1}' or "a: 1"
+      - a path to a file containing JSON/YAML
+    Returns parsed Python object or None.
+    """
+    if not value:
+        return None
+    p = Path(value)
+    if p.exists():
+        text = p.read_text(encoding="utf-8")
+    else:
+        text = value
+    # try JSON first then YAML
+    try:
+        return json.loads(text)
+    except Exception:
+        try:
+            return yaml.safe_load(text)
+        except Exception:
+            return None
 
 
 def load_config(config_path: str) -> dict:
@@ -34,8 +77,7 @@ def load_config(config_path: str) -> dict:
         raise ValueError(f"Provided path is not a file: {config_path}")
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = yaml.load(f, Loader=EnvVarLoader)
+        config = load_project_config_yaml(config_path)
         return config
     except yaml.YAMLError as e:
         raise ValueError(
@@ -233,12 +275,32 @@ def parse_args() -> DocmancerConfig:
         default=argparse.SUPPRESS,
         help="Filepath to .gguf file for local model",
     )
-
     parser.add_argument(
-        "--model-remote-api",
-        type=str,
-        default=argparse.SUPPRESS,
-        help="API endpoint for web-based model. Must include API key if required",
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        help="Logging level (overrides DOCMANCER_LOG_LEVEL env var)",
+        default=None,
+    )
+
+    parser.add_argument("--remote-endpoint", help="Remote LLM API endpoint URL")
+    parser.add_argument("--remote-provider", help="Remote API provider name")
+    parser.add_argument(
+        "--remote-response-path", help="Where to extract response in JSON (dotted path)"
+    )
+    parser.add_argument(
+        "--remote-header",
+        action="append",
+        help="Header override (repeatable). Format: Key=Value",
+    )
+    parser.add_argument(
+        "--remote-headers-json", help="JSON/YAML string or file path for headers dict"
+    )
+    parser.add_argument(
+        "--remote-payload", help="JSON/YAML string or file path for payload template"
+    )
+    parser.add_argument(
+        "--remote-payload-file",
+        help="alternate explicit file path for payload template",
     )
 
     # Parse arguments after defaults are set
@@ -305,13 +367,15 @@ def parse_args() -> DocmancerConfig:
         and app_config["llm_config_mode"] == "local"
         and not app_config["model_local_path"]
     ):
-        parser.error("--model-local-path is required when --model-type is 'local'.")
+        parser.error(
+            "--model-local-path is required when --llm-config-mode is 'local'."
+        )
     if (
         "llm_config_mode" in app_config
         and app_config["llm_config_mode"] == "remote"
         and not app_config["model_remote_api"]
     ):
-        parser.error("--model-remote-api is required when --model-type is 'remote'.")
+        parser.error("--api_endpoint is required when --llm-config-mode is 'remote'.")
 
     # If `project_dir` is not explicitly set, derive it from config file location
     # This logic assumes `project_dir` in config is the true project root
@@ -322,6 +386,50 @@ def parse_args() -> DocmancerConfig:
         )  # Store config_path in a global var or return it
     else:  # Fallback if no config and no arg
         config["project_dir"] = str(Path.cwd())
+
+    # Ensure llm_config and remote_api exist
+    llm = config.setdefault("llm_config", {})
+    remote = llm.setdefault("remote_api", {})
+
+    # Merge simple overrides
+    if args.remote_endpoint:
+        remote["api_endpoint"] = args.remote_endpoint
+    if args.remote_provider:
+        remote["provider"] = args.remote_provider
+    if args.remote_response_path:
+        remote["response_path"] = args.remote_response_path
+
+    # Merge headers: priority order -> CLI key=val pairs, --remote-headers-json, existing config
+    headers_from_kv = _parse_kv_pairs(args.remote_header)
+    headers_from_json = _parse_json_or_file(args.remote_headers_json) or {}
+    # normalize existing headers
+    existing_headers = remote.get("headers") or {}
+    # merge: existing <- headers_from_json <- headers_from_kv  (kv wins)
+    merged_headers = {
+        **existing_headers,
+        **(headers_from_json or {}),
+        **headers_from_kv,
+    }
+    if merged_headers:
+        remote["headers"] = merged_headers
+
+    # Merge payload template: CLI explicit payload JSON/YAML or file overrides
+    payload_src = args.remote_payload_file or args.remote_payload
+    payload = _parse_json_or_file(payload_src) if payload_src else None
+    # if CLI provided a simple inline payload string that parsed as string, try treating as JSON/YAML anyway
+    if payload is None and payload_src:
+        try:
+            payload = json.loads(payload_src)
+        except Exception:
+            try:
+                payload = yaml.safe_load(payload_src)
+            except Exception:
+                payload = None
+    if payload is not None:
+        remote["payload_template"] = payload
+
+    if args.log_level:
+        config["log_level"] = args.log_level
 
     # update config with args
     config.update(app_config)
