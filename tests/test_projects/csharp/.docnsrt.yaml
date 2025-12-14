@@ -1,0 +1,11 @@
+style: xml
+language: csharp
+files:
+  - "src/**/*.cs"
+functions:
+  - "*"
+ignore_files:
+  - "**/test_*.cs"     
+ignore_functions:
+  - "main"          
+

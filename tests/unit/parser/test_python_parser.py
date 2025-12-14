@@ -1,8 +1,8 @@
 import pytest
 from tree_sitter import Parser, Language
 import tree_sitter_python as tspython
-from docmancer.models.function_context import FunctionContextModel
-from docmancer.parser.python_parser import PythonParser
+from docnsrt.models.function_context import FunctionContextModel
+from docnsrt.parsers.python_parser import PythonParser
 
 
 @pytest.fixture

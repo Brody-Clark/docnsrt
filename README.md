@@ -1,7 +1,7 @@
 > [!NOTE]
 > This project is a work in progress. As such, some features may be missing or incomplete
 
-<h1 align="center">Docmancer</h1><h2 align="center"> Documentation Generation Framework</h2>
+<h1 align="center">docnsrt</h1><h2 align="center"> Documentation Generation Framework</h2>
 
 <p align="center">
 Supported Languages:
@@ -12,7 +12,7 @@ Supported Languages:
 
 ## Intro
 
-Docmancer is a CLI source code documentation generation tool that writes docstring summaries for in-code documentation with support for various LLMs. It is designed to streamline the process of using LLMs to insert consistently formatted soure code documentation with flexibilty and ease of use in mind.
+docnsrt is a CLI-based multi-language source code docstring template insertion tool. It is designed to streamline the process of writing consistently formatted soure code documentation. Major docstring formats are supported out-of-the-box with the ability to also define custom formats.
 
 ### Example Usage
 
@@ -29,7 +29,7 @@ def calculate_rectangle_area(length, width, unit="meters"):
 #### Input
 
 ```bash
-docmancer --write --file example_script.py --function claculate_rectangle_area --style "PEP"
+docnsrt --write --file example_script.py --function claculate_rectangle_area --style "PEP"
 ```
 
 #### Output (with generated docstring)
@@ -37,20 +37,18 @@ docmancer --write --file example_script.py --function claculate_rectangle_area -
 ```py
 def calculate_rectangle_area(length, width, unit="meters"):
   # example_script.py
-  """Calculates the area of a rectangle.
+  """ __SUMMARY__
 
   Args:
-    length (float): The length of the rectangle. Must be a non-negative number.
-    width (float): The width of the rectangle. Must be a non-negative number.
-    unit (str, optional): The unit of measurement for the length and width.
-                          Defaults to "meters". Other common options include
-                          "centimeters", "inches", "feet", etc.
+    length: __DESC__
+    width: __DESC__
+    unit: __DESC__
 
   Returns:
-    float: The calculated area of the rectangle in square units.
+    __RETURNS__
 
   Raises:
-    ValueError: If either `length` or `width` is a negative number.
+    __RAISES__
 
   """
   if length < 0 or width < 0:

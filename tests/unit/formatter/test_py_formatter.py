@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import patch
-from docmancer.formatter.python_formatters import PythonPepFormatter
-from docmancer.models.function_context import FunctionContextModel
-from docmancer.models.function_summary import FunctionSummaryModel
-from docmancer.models.functional_models import DocstringModel
+from docnsrt.formatter.python_formatters import PythonPepFormatter
+from docnsrt.models.function_context import FunctionContextModel
+from docnsrt.models.function_summary import FunctionSummaryModel
+from docnsrt.models.functional_models import DocstringModel
 
 
 class TestPepFormatter(unittest.TestCase):
 
-    @patch("docmancer.formatter.python_formatters.fu.get_line_text_offset_spaces")
+    @patch("docnsrt.formatter.python_formatters.fu.get_line_text_offset_spaces")
     def test_get_formatted_documentation(self, mock_get_line_text_offset_spaces):
 
         # mock return 4 spaces (tab)

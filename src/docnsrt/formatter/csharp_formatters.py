@@ -1,0 +1,60 @@
+"""Formatters for C# docstrings."""
+
+from docnsrt.models.docstring_models import DocstringLocation
+import docnsrt.utils.file_utils as fu
+from docnsrt.models.function_context import FunctionContextModel
+from docnsrt.models.function_summary import FunctionSummaryModel
+from docnsrt.formatter.formatter_base import FormatterBase
+from docnsrt.models.formatted_summary_model import FormattedSummaryModel
+
+COMMENT_START = "/// "
+
+
+class CSharpXmlFormatter(FormatterBase):
+    """Formatter for C# XML documentation comments."""
+
+    def get_formatted_documentation(
+        self,
+        file_path: str,
+        func_context: FunctionContextModel,
+        func_summary: FunctionSummaryModel,
+    ) -> FormattedSummaryModel:
+        function_signature_offset = fu.get_line_text_offset_spaces(
+            file_path, func_context.start_line
+        )
+
+        lines = [
+            COMMENT_START + "<summary>",
+            COMMENT_START + func_summary.summary.strip(),
+            COMMENT_START + "</summary>",
+        ]
+
+        if func_summary.parameters:
+            for param in func_summary.parameters:
+                name = param.name
+                desc = param.desc
+                lines.append(COMMENT_START + f"<param name=\"{name}\">{desc}</param>")
+
+        if func_summary.return_description:
+            lines.append(
+                COMMENT_START + f"<returns>{func_summary.return_description}</returns>"
+            )
+
+        # Add newlines to each line
+        lines = [line + "\n" for line in lines]
+
+        if function_signature_offset >= 0:
+            offset = function_signature_offset
+        else:
+            raise ValueError(
+                f"Unable to read start line {func_context.start_line} from file {file_path}"
+            )
+
+        formatted_summary = FormattedSummaryModel(
+            formatted_documentation=lines,
+            start_line=func_context.start_line,  # XML comments go right above the signature
+            offset_spaces=offset,
+            docstring_location=DocstringLocation.ABOVE,
+        )
+
+        return formatted_summary

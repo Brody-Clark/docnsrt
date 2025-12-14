@@ -1,40 +1,9 @@
 from unittest.mock import patch, mock_open
 import pytest
 
-from docmancer.config import (
-    load_project_config_yaml,
+from docnsrt.config import (
     _resolve_vars,
-    EnvVarLoader,
 )
-
-
-def test_load_project_config_yaml_resolves_vars_and_uses_env_loader():
-    # prepare the dict that yaml.load should return
-    raw = {
-        "vars": {"API_KEY": "sk_test_value"},
-        "remote_api": {
-            "headers": {"Authorization": "Bearer ${vars.API_KEY}", "X": "keep"},
-            "payload_template": {"model": "llm-v1"},
-        },
-    }
-
-    m_open = mock_open(read_data="dummy")
-    # patch builtins.open and the yaml.load used inside docmancer.config
-    with (
-        patch("builtins.open", m_open),
-        patch("docmancer.config.yaml.load", return_value=raw) as mock_yaml_load,
-    ):
-        result = load_project_config_yaml("some/path/.docmancer.yaml")
-
-    # ensure yaml.load was called with the EnvVarLoader
-    assert mock_yaml_load.call_count == 1
-    _, kwargs = mock_yaml_load.call_args
-    assert kwargs.get("Loader") is EnvVarLoader
-
-    # assert placeholders were resolved using the vars section
-    assert result["remote_api"]["headers"]["Authorization"] == "Bearer sk_test_value"
-    assert result["remote_api"]["headers"]["X"] == "keep"
-
 
 def test__resolve_vars_handles_nested_and_list_structures():
     config = {

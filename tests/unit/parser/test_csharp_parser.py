@@ -1,8 +1,8 @@
 import pytest
 import tree_sitter_c_sharp as tscsharp
 from tree_sitter import Parser, Language
-from docmancer.parser.csharp_parser import CSharpParser
-from docmancer.models.function_context import FunctionContextModel
+from docnsrt.parsers.csharp_parser import CSharpParser
+from docnsrt.models.function_context import FunctionContextModel
 
 
 @pytest.fixture

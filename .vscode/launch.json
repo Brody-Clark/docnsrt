@@ -3,36 +3,31 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Docmancer: Debug C# Project",
+            "name": "docnsrt: Debug C# Project",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/docmancer/__main__.py",
+            "program": "${workspaceFolder}/src/docnsrt/__main__.py",
             "args": [
                 "--write",
-                "--no-summary"
             ],
             "cwd": "${workspaceFolder}/tests/test_projects/csharp",
             "console": "integratedTerminal",
-            "justMyCode": true,
+            "justMyCode": false,
             "env": {
-                "DOCMANCER_MODEL_PATH": ""
             }
         },
          {
-            "name": "Docmancer: Debug Python Project",
+            "name": "docnsrt: Debug Python Project",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/docmancer/__main__.py",
+            "program": "${workspaceFolder}/src/docnsrt/__main__.py",
             "args": [
-                "--write",
-                "--no-summary"
+                "--write"
             ],
             "cwd": "${workspaceFolder}/tests/test_projects/python",
             "console": "integratedTerminal",
-            "justMyCode": true,
+            "justMyCode": false,
             "env": {
-                "DOCMANCER_MODEL_PATH": "",
-                "API_KEY": "sk_test_value"
             }
         },
         {

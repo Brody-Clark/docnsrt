@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from docmancer.formatter.csharp_formatters import CSharpXmlFormatter
-from docmancer.models.formatted_summary_model import FormattedSummaryModel
-from docmancer.models.function_context import FunctionContextModel
-from docmancer.models.function_summary import FunctionSummaryModel
-from docmancer.models.functional_models import ParameterModel, DocstringModel
+from docnsrt.formatter.csharp_formatters import CSharpXmlFormatter
+from docnsrt.models.formatted_summary_model import FormattedSummaryModel
+from docnsrt.models.function_context import FunctionContextModel
+from docnsrt.models.function_summary import FunctionSummaryModel
+from docnsrt.models.functional_models import ParameterModel, DocstringModel
 
 
 class TestCsharpXmlFormatter(unittest.TestCase):
-    @patch("docmancer.formatter.csharp_formatters.fu.get_line_text_offset_spaces")
+    @patch("docnsrt.formatter.csharp_formatters.fu.get_line_text_offset_spaces")
     def test_get_formatted_documentation(self, mock_line_offset: MagicMock):
 
         mock_line_offset.return_value = 4
@@ -58,7 +58,7 @@ class TestCsharpXmlFormatter(unittest.TestCase):
         )  # XML comments go right above the signature so start_line is the same as the signature
         assert test_doc_model.formatted_documentation == expected_docstring
 
-    @patch("docmancer.formatter.csharp_formatters.fu.get_line_text_offset_spaces")
+    @patch("docnsrt.formatter.csharp_formatters.fu.get_line_text_offset_spaces")
     def test_basic_summary_and_params(self, mock_offset):
         mock_offset.return_value = 4
         formatter = CSharpXmlFormatter()
@@ -100,7 +100,7 @@ class TestCsharpXmlFormatter(unittest.TestCase):
         assert doc_model.offset_spaces == 4
         assert doc_model.start_line == 10  # start_line is the same as the signature
 
-    @patch("docmancer.formatter.csharp_formatters.fu.get_line_text_offset_spaces")
+    @patch("docnsrt.formatter.csharp_formatters.fu.get_line_text_offset_spaces")
     def test_no_params(self, mock_offset):
         mock_offset.return_value = 2
         formatter = CSharpXmlFormatter()
@@ -134,7 +134,7 @@ class TestCsharpXmlFormatter(unittest.TestCase):
         assert doc_model.formatted_documentation == expected_lines
         assert doc_model.offset_spaces == 2
 
-    @patch("docmancer.formatter.csharp_formatters.fu.get_line_text_offset_spaces")
+    @patch("docnsrt.formatter.csharp_formatters.fu.get_line_text_offset_spaces")
     def test_offset_negative_raises(self, mock_offset):
         mock_offset.return_value = -1
         formatter = CSharpXmlFormatter()
