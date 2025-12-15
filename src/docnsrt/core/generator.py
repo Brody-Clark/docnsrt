@@ -20,7 +20,6 @@ class DocstringGenerator:
     def __init__(self):
         pass
 
-    # TODO: generate template fields for all parameters and exceptions
     def get_template_values(
         self, context: FunctionContextModel
     ) -> DocstringTemplateModel:

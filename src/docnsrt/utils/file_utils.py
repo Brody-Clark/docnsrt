@@ -3,7 +3,6 @@
 import os
 from pathlib import Path
 from typing import List
-import fnmatch
 
 
 def get_all_files_in_dir(dir_path):

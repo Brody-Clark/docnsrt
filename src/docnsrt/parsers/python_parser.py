@@ -1,10 +1,13 @@
 """Parser for Python code."""
 
+import logging
 from typing import List
 import tree_sitter_python as tspython
 from tree_sitter import Language, Parser
 from docnsrt.core.models import ParameterModel, DocstringModel, FunctionContextModel
 from docnsrt.parsers.parser_base import ParserBase
+
+logger = logging.get_logger(__name__)
 
 
 class PythonParser(ParserBase):
@@ -76,6 +79,28 @@ class PythonParser(ParserBase):
             parent = parent.parent
         return qualified_name
 
+    def get_name(self, root_node, source_code: str) -> str:
+        """Returns the name of the given node or empty string."""
+        name_node = root_node.child_by_field_name("name")
+        if not name_node:
+            logger.warn("Invalid name node")
+            return ""
+        name = self.get_node_text(name_node, source_code=source_code)
+        return name
+
+    def get_docstring(self, block_node, source_code: str) -> DocstringModel:
+        """Creates a docstring model from a body node"""
+        first_stmt = block_node.child(0)
+        if first_stmt and first_stmt.type == "expression_statement":
+            expr = first_stmt.child(0)
+            if expr and expr.type == "string":
+                # Get the text slice from the original source
+                comment = self.get_node_text(expr, source_code)
+                return DocstringModel(
+                    lines=comment.splitlines(), start_line=expr.start_point[0]
+                )
+        return None
+
     def extract_function_context(
         self, root_node, source_code: str, module_name: str
     ) -> FunctionContextModel:
@@ -84,8 +109,7 @@ class PythonParser(ParserBase):
         if root_node is None or root_node.type != "function_definition":
             raise ValueError("Provided root_node is not a function_definition node.")
 
-        name_node = root_node.child_by_field_name("name")
-        name = self.get_node_text(name_node, source_code=source_code)
+        name = self.get_name(root_node, source_code)
         parameters_node = root_node.child_by_field_name("parameters")
         signature = (
             f"def {name}{self.get_node_text(parameters_node, source_code=source_code)}"
@@ -93,17 +117,9 @@ class PythonParser(ParserBase):
         parameters = self.get_parameters(parameters_node, source_code)
 
         block_node = root_node.child_by_field_name("body")
+        docstring = None
         if block_node:
-            docstring = None
-            first_stmt = block_node.child(0)
-            if first_stmt and first_stmt.type == "expression_statement":
-                expr = first_stmt.child(0)
-                if expr and expr.type == "string":
-                    # Get the text slice from the original source
-                    comment = self.get_node_text(expr, source_code)
-                    docstring = DocstringModel(
-                        lines=comment.splitlines(), start_line=expr.start_point[0]
-                    )
+            docstring = self.get_docstring(block_node, source_code)
 
         qualified_name = name
         while root_node is not None:

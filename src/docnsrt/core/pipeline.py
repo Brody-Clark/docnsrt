@@ -4,8 +4,8 @@ Main processing pipeline for documentation generation
 
 import logging
 import os
-import portalocker
 from typing import List
+import portalocker
 from docnsrt.core.models import (
     WritableFileModel,
     DocstringPresentationModel,
@@ -238,7 +238,7 @@ class DocumentationPipeline:
             RuntimeError: If the file has been modified externally since it was read.
         """
 
-        logger.debug(f"Writing {len(docs)} docstrings to file {file_path}")
+        logger.debug("Writing %i docstrings to file %s", len(docs), file_path)
 
         # Sort docs by start_line and write to files
         # Read the file into memory
@@ -249,7 +249,7 @@ class DocumentationPipeline:
             st = os.stat(file_path)
             if st.st_mtime != orig_mtime or st.st_size != orig_size:
                 logger.error(
-                    f"File {file_path} changed externally (mtime or size mismatch)"
+                    "File %s changed externally (mtime or size mismatch)", file_path
                 )
                 raise RuntimeError(f"File {file_path} changed externally")
             lines = f.readlines()
@@ -276,7 +276,9 @@ class DocumentationPipeline:
                     for doc_line in doc.new_docstring.lines
                 ]
                 logger.debug(
-                    f"Inserting docstring at line {adjusted_line} in file {file_path}"
+                    "Inserting docstring at line %i in file %s",
+                    adjusted_line,
+                    file_path,
                 )
 
                 # If docstring is above the function, adjust the line to insert at for removed lines
@@ -292,4 +294,4 @@ class DocumentationPipeline:
             f.truncate()
             f.writelines(lines)
         portalocker.unlock(f)
-        logger.info(f"Wrote {len(docs)} docstrings to file {file_path}")
+        logger.info("Wrote %i docstrings to file %s", len(docs), file_path)

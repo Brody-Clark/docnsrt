@@ -1,5 +1,8 @@
+"""
+Logging configuration.
+"""
+
 import logging
-import os
 from typing import Optional
 
 LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"}

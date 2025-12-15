@@ -1,6 +1,9 @@
+"""
+Data model definitions.
+"""
+
 from typing import List, Optional
 from dataclasses import dataclass, field
-from dataclasses import dataclass
 import enum
 
 
@@ -49,39 +52,12 @@ class FunctionContextModel:
 
 
 @dataclass
-class FileProcessingContextModel:
-    file: WritableFileModel
-    functions: list[FunctionContextModel]
-    docstrings: list[DocstringPresentationModel]
-
-
-@dataclass
 class WritableFileModel:
     """Model for writable file information."""
 
     file_path: str
     last_time_modified: Optional[float] = None
     last_size_bytes: Optional[int] = None
-
-
-@dataclass
-class DocstringTemplateModel:
-    """Model for docstring template values."""
-
-    summary: str
-    return_description: Optional[str] = None
-    parameters: List[ParameterModel] = field(default_factory=list)
-    return_type: Optional[str] = None
-    exceptions: List[ExceptionModel] = field(default_factory=list)
-    remarks: Optional[str] = None
-
-
-@dataclass
-class DocstringModel:
-    """Model for function docstrings."""
-
-    lines: List[str]
-    start_line: int
 
 
 @dataclass
@@ -99,6 +75,27 @@ class DocstringPresentationModel:
     docstring_location: DocstringLocation = (
         DocstringLocation.INLINE
     )  # Location of the docstring
+
+
+@dataclass
+class FileProcessingContextModel:
+    """Model for capturing docstring data that is needed to write to a file"""
+
+    file: WritableFileModel
+    functions: list[FunctionContextModel]
+    docstrings: list[DocstringPresentationModel]
+
+
+@dataclass
+class DocstringTemplateModel:
+    """Model for docstring template values."""
+
+    summary: str
+    return_description: Optional[str] = None
+    parameters: List[ParameterModel] = field(default_factory=list)
+    return_type: Optional[str] = None
+    exceptions: List[ExceptionModel] = field(default_factory=list)
+    remarks: Optional[str] = None
 
 
 @dataclass
