@@ -16,7 +16,7 @@ namespace SampleProject
         {
             return a * b;
         }
-    }
+    };
 
     public class Greeter
     {
@@ -33,7 +33,7 @@ namespace SampleProject
         {
             Console.WriteLine($"Hello, {name}!");
         }
-    }
+    };
 
     // Top-level static class
     public static class Utility
@@ -43,7 +43,7 @@ namespace SampleProject
             Console.WriteLine("Version 1.0");
         }
 
-    }
+    };
 
     public static Greeter GetGreeter()
     {

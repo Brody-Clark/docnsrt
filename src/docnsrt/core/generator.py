@@ -24,13 +24,15 @@ class DocstringGenerator:
     def get_template_values(
         self, context: FunctionContextModel
     ) -> DocstringTemplateModel:
+        """Generates template values for a given function context."""
         return DocstringTemplateModel(
             summary="_summary_",
-            return_description="_returns_",
-            return_type="_return_type_",
+            return_description="_desc_",
+            return_type="_type_",
             remarks="_remarks_",
-            exceptions=[ExceptionModel(type="_type_", desc="_description_")],
+            exceptions=[ExceptionModel(type="_type_", desc="_desc_")],
             parameters=[
-                ParameterModel(name="_name_", type="_type_", desc="_description_")
+                ParameterModel(name=p.name, type=p.type, desc="_desc_")
+                for p in context.parameters
             ],
         )

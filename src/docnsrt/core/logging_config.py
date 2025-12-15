@@ -10,7 +10,7 @@ def configure_logging(level: Optional[str] = None) -> None:
     Configure root logger. level order: explicit arg > DOCNSRT_LOG_LEVEL env > INFO.
     """
     if level is None:
-        level = os.getenv("DOCNSRT_LOG_LEVEL", "INFO")
+        level = "INFO"
     level = level.upper()
     if level not in LEVELS:
         level = "INFO"

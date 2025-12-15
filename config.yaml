@@ -32,12 +32,5 @@ ignore_functions:
   - "_private_helper_func" # Ignore functions with private conventions
 
 # --- TODO: Other Global Settings ---
-# - output directories
-# - logging levels
-# output_settings:
-#   output_directory: "./docs_output"
-#   overwrite_existing: false
-# - chaching and project indexing for performance and better context in prompts
 # logging_settings:
 #   level: "INFO" # DEBUG, INFO, WARNING
-#   log_file: "docnsrt.log"

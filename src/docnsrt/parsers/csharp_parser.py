@@ -73,69 +73,112 @@ class CSharpParser(ParserBase):
         self, root_node, source_code, module_name
     ) -> FunctionContextModel:
 
-        node_stack = [(root_node, [])]  # (node, scope_stack)
-
-        while node_stack:
-            node, scope = node_stack.pop()
-
-            if node.type == "method_declaration":
-                return_type = None
-                identifiers = []
-                modifiers = []
-                parameters_node = None
-                for child_node in node.children:
-                    if child_node.type == "modifier":
-                        modifiers.append(
-                            self.get_node_text(child_node, source_code=source_code)
-                        )
-                    elif child_node.type == "parameter_list":
-                        parameters_node = child_node
-                    elif child_node.type == "predefined_type":
-                        return_type = self.get_node_text(
-                            child_node, source_code=source_code
-                        )
-                    elif child_node.type == "identifier":
-                        identifiers.append(
-                            self.get_node_text(child_node, source_code=source_code)
-                        )
-
-                docstring = None
-                prev_sibling = node.prev_sibling
-                if prev_sibling is not None and prev_sibling.type == "comment":
-                    comment = self.get_node_text(prev_sibling, source_code=source_code)
-                    docstring = DocstringModel(
-                        lines=comment.splitlines(),
-                        start_line=prev_sibling.start_point[0],
-                    )
-
-                modifiers_str = " ".join(modifiers) if modifiers else ""
-                identifiers_str = " ".join(identifiers) if identifiers else ""
-                return_type = f" {return_type} " if return_type is not None else ""
-                parameters_str = self.get_node_text(
-                    parameters_node, source_code=source_code
+        return_type = None
+        identifiers = []
+        modifiers = []
+        parameters_node = None
+        for child_node in root_node.children:
+            if child_node.type == "modifier":
+                modifiers.append(
+                    self.get_node_text(child_node, source_code=source_code)
                 )
-                signature = (
-                    f"{modifiers_str}{return_type}{identifiers_str}{parameters_str}"
-                )
-                parameters = self.get_parameters(parameters_node, source_code)
-
-                return FunctionContextModel(
-                    qualified_name=".".join([module_name] + scope + identifiers),
-                    signature=signature,
-                    parameters=parameters,
-                    docstring=docstring,
-                    start_line=node.range.start_point.row,
+            elif child_node.type == "parameter_list":
+                parameters_node = child_node
+            elif child_node.type == "predefined_type":
+                return_type = self.get_node_text(child_node, source_code=source_code)
+            elif child_node.type == "identifier":
+                identifiers.append(
+                    self.get_node_text(child_node, source_code=source_code)
                 )
 
-            elif node.type == "class_declaration":
-                name_node = node.child_by_field_name("name")
-                class_name = self.get_node_text(name_node, source_code=source_code)
-                new_scope = scope + [class_name]
-                for child in reversed(node.children):
-                    node_stack.append((child, new_scope))
+        docstring = self.get_docstring(root_node, source_code)
 
-            else:
-                for child in reversed(node.children):
-                    node_stack.append((child, scope))
+        modifiers_str = " ".join(modifiers) if modifiers else ""
+        identifiers_str = " ".join(identifiers) if identifiers else ""
+        return_type = f" {return_type} " if return_type is not None else ""
+        parameters_str = self.get_node_text(parameters_node, source_code=source_code)
 
+        parameters = self.get_parameters(parameters_node, source_code)
+
+        return FunctionContextModel(
+            qualified_name=module_name
+            + "."
+            + self.get_qualified_name(root_node, source_code=source_code),
+            signature=f"{modifiers_str}{return_type}{identifiers_str}{parameters_str}",
+            parameters=parameters,
+            docstring=docstring,
+            start_line=root_node.range.start_point.row,
+        )
+
+    def get_docstring(self, node, source_code: str) -> DocstringModel:
+        """Extracts the docstring from a method_declaration node.
+
+        Args:
+            node (tree_sitter.Node): The method_declaration node.
+            source_code (str): The source code as a string.
+        Returns:
+            DocstringModel: The extracted docstring model, or None if not found.
+        """
+        # In C#, docstrings are XML comments preceding the method declaration
+        # Look for preceding sibling nodes that are documentation comments
+        docstring_lines = []
+        start_line = node.start_point.row
+        current_node = node.prev_sibling
+
+        if not current_node or current_node.type != "comment":
+            return None
+
+        comment_text = self.get_node_text(current_node, source_code=source_code)
+
+        # Mulit-line comment blocks using /**/ are captured in a single node
+        # with the newlines included
+        if comment_text.startswith("/*"):
+            for line in comment_text.split("\n"):
+                docstring_lines.append(line)
+        else:
+            # Multi-line comments using // need to be found by walking upwards
+            docstring_lines.insert(0, comment_text)
+            prev_line = current_node.start_point.row
+            current_node = current_node.prev_sibling
+            while (
+                current_node is not None
+                and current_node.type == "comment"
+                and current_node.start_point.row == prev_line - 1
+            ):
+                comment_text = self.get_node_text(current_node, source_code=source_code)
+
+                docstring_lines.insert(0, comment_text)
+                current_node = current_node.prev_sibling
+                prev_line = prev_line - 1
+
+        if docstring_lines:
+            return DocstringModel(
+                lines=docstring_lines, start_line=start_line - len(docstring_lines)
+            )
         return None
+
+    def get_qualified_name(self, node, source_code: str) -> str:
+        """Get the qualified name of the function, including class and module names.
+
+        Args:
+            node (tree_sitter.Node): The function definition node.
+            source_code (str): The source code as a string.
+        Returns:
+
+            str: The qualified name of the function.
+        """
+        qualified_name = self.get_node_text(
+            node.child_by_field_name("name"), source_code=source_code
+        )
+        parent = node.parent
+        while parent is not None:
+            if parent.type == "class_declaration":
+                class_name_node = parent.child_by_field_name("name")
+                class_name = self.get_node_text(
+                    class_name_node, source_code=source_code
+                )
+                qualified_name = (
+                    f"{class_name}.{qualified_name}" if qualified_name else class_name
+                )
+            parent = parent.parent
+        return qualified_name

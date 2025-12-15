@@ -78,6 +78,10 @@ class Presenter:
     def get_user_approval(self, doc: DocstringPresentationModel) -> UserResponseModel:
         """
         Gets user approval for the generated documentation.
+        Args:
+            doc: The generated documentation model.
+        Returns:
+            A UserResponseModel.
         """
         while True:
             response = self.interact(doc)

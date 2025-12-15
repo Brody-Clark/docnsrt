@@ -47,51 +47,86 @@ class PythonParser(ParserBase):
                 )
         return parameters
 
+    def get_qualified_name(self, node, source_code: str) -> str:
+        """Get the qualified name of the function, including class and module names.
+
+        Args:
+            node (tree_sitter.Node): The function definition node.
+            source_code (str): The source code as a string.
+        Returns:
+
+            str: The qualified name of the function.
+        """
+        qualified_name = self.get_node_text(
+            node.child_by_field_name("name"), source_code=source_code
+        )
+        parent = node.parent
+        while parent is not None:
+            if parent.type == "class_definition":
+                class_name_node = parent.child_by_field_name("name")
+                class_name = self.get_node_text(
+                    class_name_node, source_code=source_code
+                )
+                qualified_name = (
+                    f"{class_name}.{qualified_name}" if qualified_name else class_name
+                )
+            elif parent.type == "module":
+                # Assuming module name is derived from file name or provided context
+                break
+            parent = parent.parent
+        return qualified_name
+
     def extract_function_context(
         self, root_node, source_code: str, module_name: str
     ) -> FunctionContextModel:
+        """Extracts function context from a function definition node."""
 
-        node_stack = [(root_node, [])]  # (node, scope_stack)
+        if root_node is None or root_node.type != "function_definition":
+            raise ValueError("Provided root_node is not a function_definition node.")
 
-        while node_stack:
-            node, scope = node_stack.pop()
+        name_node = root_node.child_by_field_name("name")
+        name = self.get_node_text(name_node, source_code=source_code)
+        parameters_node = root_node.child_by_field_name("parameters")
+        signature = (
+            f"def {name}{self.get_node_text(parameters_node, source_code=source_code)}"
+        )
+        parameters = self.get_parameters(parameters_node, source_code)
 
-            if node.type == "function_definition":
-                name_node = node.child_by_field_name("name")
-                name = self.get_node_text(name_node, source_code=source_code)
-                new_scope = scope + [name]
-                qualified_name = ".".join([module_name] + new_scope)
+        block_node = root_node.child_by_field_name("body")
+        if block_node:
+            docstring = None
+            first_stmt = block_node.child(0)
+            if first_stmt and first_stmt.type == "expression_statement":
+                expr = first_stmt.child(0)
+                if expr and expr.type == "string":
+                    # Get the text slice from the original source
+                    comment = self.get_node_text(expr, source_code)
+                    docstring = DocstringModel(
+                        lines=comment.splitlines(), start_line=expr.start_point[0]
+                    )
 
-                parameters_node = node.child_by_field_name("parameters")
-                signature = f"def {name}{self.get_node_text(parameters_node, source_code=source_code)}"
-
-                block_node = node.child_by_field_name("body")
-                if not block_node:
-                    continue
-                docstring = None
-                first_stmt = block_node.child(0)
-                if first_stmt and first_stmt.type == "expression_statement":
-                    expr = first_stmt.child(0)
-                    if expr and expr.type == "string":
-                        # Get the text slice from the original source
-                        comment = self.get_node_text(expr, source_code)
-                        docstring = DocstringModel(
-                            lines=comment.splitlines(), start_line=expr.start_point[0]
-                        )
-
-                parameters = self.get_parameters(parameters_node, source_code)
-
-                context = FunctionContextModel(
-                    qualified_name=qualified_name,
-                    parameters=parameters,
-                    signature=signature,
-                    docstring=docstring,
-                    start_line=node.start_point[0],
+        qualified_name = name
+        while root_node is not None:
+            if root_node.type == "class_definition":
+                class_name_node = root_node.child_by_field_name("name")
+                class_name = self.get_node_text(
+                    class_name_node, source_code=source_code
                 )
-                return context
+                qualified_name = (
+                    f"{class_name}.{qualified_name}" if qualified_name else class_name
+                )
+            elif root_node.type == "module":
+                qualified_name = (
+                    f"{module_name}.{qualified_name}" if qualified_name else module_name
+                )
+                break
+            root_node = root_node.parent
 
-            else:
-                # Add children to stack (depth-first traversal)
-                for child in reversed(node.children):
-                    node_stack.append((child, scope))
-        return None
+        context = FunctionContextModel(
+            qualified_name=qualified_name,
+            parameters=parameters,
+            signature=signature,
+            docstring=docstring,
+            start_line=root_node.start_point[0],
+        )
+        return context

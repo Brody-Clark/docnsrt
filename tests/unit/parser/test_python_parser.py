@@ -1,4 +1,3 @@
-import code
 import pytest
 from tree_sitter import Parser, Language
 import tree_sitter_python as tspython
@@ -26,7 +25,7 @@ def test_extract_simple_function(parser, get_root_node):
 def foo(x, y):
     return x + y
 """
-    root_node = get_root_node(code)
+    root_node = get_root_node(code).child(0)
     context = parser.extract_function_context(root_node, code, "test_module")
     assert context.qualified_name == "test_module.foo"
     assert context.signature.startswith("def foo")
@@ -40,7 +39,7 @@ def test_extract_function_with_comments(parser, get_root_node):
 def add(a, b):
     return a + b
 """
-    root_node = get_root_node(code)
+    root_node = get_root_node(code).child(2)
     context = parser.extract_function_context(root_node, code, "test_module")
     assert context.qualified_name == "test_module.add"
     assert context.docstring is None  # Docstring is None, comments are not captured
@@ -54,7 +53,7 @@ def outer():
         pass
     return inner()
 """
-    root_node = get_root_node(code)
+    root_node = get_root_node(code).child(0)
     context = parser.extract_function_context(root_node, code, "test_module")
     names = [context.qualified_name]
     assert "test_module.outer" in names
@@ -88,7 +87,7 @@ class MyClass:
     def method(self):
         pass
 """
-    root_node = get_root_node(code)
+    root_node = get_root_node(code).child(0).child_by_field_name('body').child(0)
     context = parser.extract_function_context(root_node, code, "test_module")
     assert "test_module.MyClass.method" in context.qualified_name
     assert context.docstring is None  # No docstring, only comments

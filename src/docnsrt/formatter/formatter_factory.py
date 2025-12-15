@@ -25,6 +25,11 @@ class FormatterFactory:
         Returns:
             FormatterBase: An instance of a formatter for the specified style and language.
         """
+        if not style or not language:
+            raise ValueError("Both style and language must be specified.")
+
+        if style == DocstringStyle.CUSTOM.value:
+            raise NotImplementedError("Custom style is not implemented yet.")
         if language == Languages.PYTHON.value:
             if style.lower() == DocstringStyle.PEP.lower():
                 return PythonPepFormatter()
