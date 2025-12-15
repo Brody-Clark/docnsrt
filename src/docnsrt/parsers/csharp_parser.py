@@ -4,8 +4,7 @@ from typing import List
 import tree_sitter_c_sharp as tscsharp
 from tree_sitter import Language, Parser
 from docnsrt.parsers.parser_base import ParserBase
-from docnsrt.models.function_context import FunctionContextModel
-from docnsrt.models.functional_models import ParameterModel, DocstringModel
+from docnsrt.core.models import ParameterModel, DocstringModel, FunctionContextModel
 
 
 class CSharpParser(ParserBase):
@@ -70,11 +69,10 @@ class CSharpParser(ParserBase):
                 )
         return parameters
 
-    def extract_function_contexts(
+    def extract_function_context(
         self, root_node, source_code, module_name
-    ) -> List[FunctionContextModel]:
+    ) -> FunctionContextModel:
 
-        function_contexts = []
         node_stack = [(root_node, [])]  # (node, scope_stack)
 
         while node_stack:
@@ -121,15 +119,14 @@ class CSharpParser(ParserBase):
                 )
                 parameters = self.get_parameters(parameters_node, source_code)
 
-                function_contexts.append(
-                    FunctionContextModel(
-                        qualified_name=".".join([module_name] + scope + identifiers),
-                        signature=signature,
-                        parameters=parameters,
-                        docstring=docstring,
-                        start_line=node.range.start_point.row,
-                    )
+                return FunctionContextModel(
+                    qualified_name=".".join([module_name] + scope + identifiers),
+                    signature=signature,
+                    parameters=parameters,
+                    docstring=docstring,
+                    start_line=node.range.start_point.row,
                 )
+
             elif node.type == "class_declaration":
                 name_node = node.child_by_field_name("name")
                 class_name = self.get_node_text(name_node, source_code=source_code)
@@ -141,4 +138,4 @@ class CSharpParser(ParserBase):
                 for child in reversed(node.children):
                     node_stack.append((child, scope))
 
-        return function_contexts
+        return None

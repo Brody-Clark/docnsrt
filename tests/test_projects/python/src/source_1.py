@@ -14,12 +14,21 @@ class InvalidUserException(Exception):
 
 
 def string_manip(s):
+    """
+    _summary_
+
+    Args:
+        _name_ (_type_): _description_
+
+    Returns:
+        _returns_
+    """
     s = s[::-1]
     return s
 
 
 def login(user, p):
-    """Logs a user in."""
+
     if len(user) == 0 or len(p) == 0:
         raise ValueError("field cannot be empty")
     try:
@@ -32,18 +41,11 @@ def login(user, p):
 class Math:
 
     def calculate_area(self, length, width):
-        """Calculates the area of a rectangle.
 
-        Args:
-            length (int): The length of the rectangle.
-            width (int): The width of the rectangle.
-
-        Returns:
-            int: The area of the rectangle.
-        """
         return length * width
 
     def calc(self, perimeter: int, num: int, other_num: float):
+
         if other_num < 0:
             raise ValueError("other_num must be positive")
         perimeter = num + 1 + other_num

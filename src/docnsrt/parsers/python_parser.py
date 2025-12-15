@@ -3,9 +3,8 @@
 from typing import List
 import tree_sitter_python as tspython
 from tree_sitter import Language, Parser
-from docnsrt.models.functional_models import ParameterModel, DocstringModel
+from docnsrt.core.models import ParameterModel, DocstringModel, FunctionContextModel
 from docnsrt.parsers.parser_base import ParserBase
-from docnsrt.models.function_context import FunctionContextModel
 
 
 class PythonParser(ParserBase):
@@ -48,11 +47,10 @@ class PythonParser(ParserBase):
                 )
         return parameters
 
-    def extract_function_contexts(
+    def extract_function_context(
         self, root_node, source_code: str, module_name: str
-    ) -> List[FunctionContextModel]:
+    ) -> FunctionContextModel:
 
-        contexts = []
         node_stack = [(root_node, [])]  # (node, scope_stack)
 
         while node_stack:
@@ -90,24 +88,10 @@ class PythonParser(ParserBase):
                     docstring=docstring,
                     start_line=node.start_point[0],
                 )
-                contexts.append(context)
-
-                # Add block contents to stack with updated scope
-                for child in reversed(node.children):
-                    if child.type == "block":
-                        node_stack.append((child, new_scope))
-
-            elif node.type == "class_definition":
-                name_node = node.child_by_field_name("name")
-                class_name = self.get_node_text(name_node, source_code=source_code)
-                new_scope = scope + [class_name]
-                for child in reversed(node.children):
-                    if child.type == "block":
-                        node_stack.append((child, new_scope))
+                return context
 
             else:
                 # Add children to stack (depth-first traversal)
                 for child in reversed(node.children):
                     node_stack.append((child, scope))
-
-        return contexts
+        return None

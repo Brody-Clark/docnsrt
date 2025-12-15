@@ -6,7 +6,7 @@ from typing import List
 import os
 import fnmatch
 import docnsrt.utils.file_utils as fu
-from docnsrt.models.function_context import FunctionContextModel
+from docnsrt.core.models import FunctionContextModel
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +119,7 @@ class ParserBase(ABC):
         for name, function_nodes in functions.items():
             for node in function_nodes:
                 function_contexts.append(
-                    self.extract_function_contexts(node, code, name)
+                    self.extract_function_context(node, code, name)
                 )
 
         return function_contexts
@@ -137,10 +137,10 @@ class ParserBase(ABC):
         return source_code[node.start_byte : node.end_byte].decode("utf-8")
 
     @abstractmethod
-    def extract_function_contexts(
+    def extract_function_context(
         self, root_node, source_code: str, module_name: str
-    ) -> List[FunctionContextModel]:
-        """Extracts function contexts from a root node.
+    ) -> FunctionContextModel:
+        """Extracts function context from function root node.
 
         Args:
             root_node (tree_sitter.Node): tree sitter root node
@@ -148,5 +148,5 @@ class ParserBase(ABC):
             module_name (str): name of the module the code belongs to
 
         Returns:
-            List[FunctionContextModel]: A list of function contexts.
+            FunctionContextModel: A function context or None.
         """

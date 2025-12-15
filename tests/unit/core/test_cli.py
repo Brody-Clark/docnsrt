@@ -3,14 +3,6 @@ import pytest
 import docnsrt.core.cli as cli
 
 
-def test_parse_kv_pairs_basic():
-    inp = ["Authorization=Bearer sk", "X-Flag:1", "BareKey"]
-    out = cli._parse_kv_pairs(inp)
-    assert out["Authorization"] == "Bearer sk"
-    assert out["X-Flag"] == "1"
-    assert out["BareKey"] == ""
-
-
 def test_find_and_load_config_handles_parsing_error(monkeypatch, tmp_path):
     # Create a fake config file path but make load_config raise to simulate parse error
     cfg_path = tmp_path / ".docnsrt.yaml"

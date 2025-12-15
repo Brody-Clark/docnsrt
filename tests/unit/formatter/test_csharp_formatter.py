@@ -1,10 +1,13 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from docnsrt.formatter.csharp_formatters import CSharpXmlFormatter
-from docnsrt.models.formatted_summary_model import FormattedSummaryModel
-from docnsrt.models.function_context import FunctionContextModel
-from docnsrt.models.function_summary import FunctionSummaryModel
-from docnsrt.models.functional_models import ParameterModel, DocstringModel
+from docnsrt.core.models import (
+    FunctionContextModel,
+    FormattedDocstringModel,
+    DocstringTemplateModel,
+    ParameterModel,
+    DocstringModel,
+)
 
 
 class TestCsharpXmlFormatter(unittest.TestCase):
@@ -17,29 +20,25 @@ class TestCsharpXmlFormatter(unittest.TestCase):
         test_func_context = FunctionContextModel(
             qualified_name="test.class.DoubleNum",
             signature="int DoubleNum(int input)",
-            body=" return input * 2;",
             parameters=[
                 ParameterModel(name="input", type="int", desc="number to multiply by 2")
             ],
-            return_type="int",
             docstring=DocstringModel(lines=[], start_line=0),
             start_line=1,
-            end_line=3,
         )
 
         test_param_1 = ParameterModel(
             name="input", type="int", desc="number to multiply by 2"
         )
-        test_func_summary = FunctionSummaryModel(
+        test_func_summary = DocstringTemplateModel(
             summary="this is a test function",
             return_description="returns input times 2",
             parameters=[test_param_1],
-            return_type="int",
         )
-        test_doc_model: FormattedSummaryModel = formatter.get_formatted_documentation(
+        test_doc_model: FormattedDocstringModel = formatter.get_formatted_docstring(
             file_path="test_file.cs",
             func_context=test_func_context,
-            func_summary=test_func_summary,
+            template_values=test_func_summary,
         )
 
         expected_docstring = [
@@ -65,28 +64,24 @@ class TestCsharpXmlFormatter(unittest.TestCase):
         func_context = FunctionContextModel(
             qualified_name="TestClass.TestMethod",
             signature="int TestMethod(int x, int y)",
-            body="return x + y;",
             parameters=[
                 ParameterModel(name="x", type="int", desc="first number"),
                 ParameterModel(name="y", type="int", desc="second number"),
             ],
-            return_type="int",
             start_line=10,
-            end_line=12,
             docstring=DocstringModel(lines=[], start_line=0),
         )
         param1 = ParameterModel(name="x", type="int", desc="first number")
         param2 = ParameterModel(name="y", type="int", desc="second number")
-        func_summary = FunctionSummaryModel(
+        func_summary = DocstringTemplateModel(
             summary="Adds two numbers.",
             return_description="The sum of x and y.",
             parameters=[param1, param2],
-            return_type="int",
         )
-        doc_model = formatter.get_formatted_documentation(
+        doc_model = formatter.get_formatted_docstring(
             file_path="test_file.cs",
             func_context=func_context,
-            func_summary=func_summary,
+            template_values=func_summary,
         )
         expected_lines = [
             "/// <summary>\n",
@@ -107,23 +102,19 @@ class TestCsharpXmlFormatter(unittest.TestCase):
         func_context = FunctionContextModel(
             qualified_name="TestClass.NoParamMethod",
             signature="void NoParamMethod()",
-            body="Console.WriteLine(\"Hello\");",
             parameters=[],
-            return_type="void",
             start_line=5,
-            end_line=6,
             docstring=DocstringModel(lines=[], start_line=0),
         )
-        func_summary = FunctionSummaryModel(
+        func_summary = DocstringTemplateModel(
             summary="Prints Hello.",
             return_description="None.",
             parameters=[],
-            return_type="void",
         )
-        doc_model = formatter.get_formatted_documentation(
+        doc_model = formatter.get_formatted_docstring(
             file_path="test_file.cs",
             func_context=func_context,
-            func_summary=func_summary,
+            template_values=func_summary,
         )
         expected_lines = [
             "/// <summary>\n",
@@ -142,21 +133,18 @@ class TestCsharpXmlFormatter(unittest.TestCase):
             qualified_name="TestClass.BadOffset",
             signature="void BadOffset()",
             parameters=[],
-            return_type="void",
-            body="",
             start_line=1,
-            end_line=2,
             docstring=DocstringModel(lines=[], start_line=0),
         )
-        func_summary = FunctionSummaryModel(
+        func_summary = DocstringTemplateModel(
             summary="Bad offset test.",
             return_description="None.",
             parameters=[],
             return_type="void",
         )
         with self.assertRaises(ValueError):
-            formatter.get_formatted_documentation(
+            formatter.get_formatted_docstring(
                 file_path="test_file.cs",
                 func_context=func_context,
-                func_summary=func_summary,
+                template_values=func_summary,
             )

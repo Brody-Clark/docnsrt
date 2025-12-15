@@ -12,6 +12,7 @@ from docnsrt.core.styles import (
 )
 from docnsrt.core.languages import CANONICAL_LANGUAGE_NAMES
 
+
 def load_config(config_path: str) -> dict:
     """Loads and parses a YAML configuration file.
 
@@ -132,6 +133,7 @@ def parse_args() -> DocnsrtConfig:
     # CLI Argument for the configuration file
     parser.add_argument(
         "--config",
+        "-c",
         type=str,
         default=".docnsrt.yaml",
         help="Path to the YAML configuration file for docstring settings.",
@@ -145,6 +147,7 @@ def parse_args() -> DocnsrtConfig:
     )
     parser.add_argument(
         "--functions",
+        "-func",
         nargs="*",
         default=argparse.SUPPRESS,
         help="Function names or glob patterns to match functions to within speficied files (e.g., calculate_*). Default is all functions.",
@@ -171,6 +174,7 @@ def parse_args() -> DocnsrtConfig:
 
     parser.add_argument(
         "--language",
+        "-l",
         type=str,
         choices=CANONICAL_LANGUAGE_NAMES,
         default=argparse.SUPPRESS,
@@ -179,6 +183,7 @@ def parse_args() -> DocnsrtConfig:
 
     parser.add_argument(
         "--style",
+        "-s",
         type=str,
         choices=CANONICAL_STYLE_NAMES,
         default=argparse.SUPPRESS,
@@ -216,7 +221,6 @@ def parse_args() -> DocnsrtConfig:
         help="Logging level (overrides docnsrt_LOG_LEVEL env var)",
         default=None,
     )
-
 
     # Parse arguments after defaults are set
     args = parser.parse_args()
@@ -288,7 +292,6 @@ def parse_args() -> DocnsrtConfig:
 
     if args.log_level:
         config["log_level"] = args.log_level
-
 
     # update config with args
     config.update(app_config)

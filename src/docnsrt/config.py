@@ -9,6 +9,7 @@ import re
 from dataclasses_json import dataclass_json
 from docnsrt.core.styles import DocstringStyle
 
+
 @dataclass_json
 @dataclass
 class DocnsrtConfig:

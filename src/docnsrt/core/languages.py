@@ -21,3 +21,8 @@ class Languages(Enum):
 
 CANONICAL_LANGUAGE_NAMES: List[str] = [lang.value for lang in Languages]
 LOWERCASE_LANGUAGES_NAMES: List[str] = [lang.lower() for lang in Languages]
+
+SupportedFileExtensions: dict = {
+    Languages.PYTHON.value: [".py"],
+    Languages.CSHARP.value: [".cs"],
+}

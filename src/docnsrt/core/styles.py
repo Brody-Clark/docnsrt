@@ -9,6 +9,7 @@ class DocstringStyle(Enum):
     Enum representing the supported documentation styles.
     The value of each enum member is its canonical string representation.
     """
+
     BASIC = "basic"
     PEP = "PEP"
     DOXYGEN = "doxygen"

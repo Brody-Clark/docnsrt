@@ -25,10 +25,14 @@ def get_all_files_in_dir(dir_path):
 
 
 def get_files_by_pattern(
-    start_dir: str, include_patterns: List[str], ignore_patterns: List[str]
+    start_dir: str,
+    include_patterns: List[str],
+    ignore_patterns: List[str],
+    extensions: List[str],
 ) -> List[Path]:
     """
-    Return a list of Path objects matching the given glob pattern.
+    Return a list of Path objects matching the given glob pattern and extensions,
+    starting from the specified directory. Ignores files matching any of the ignore patterns.
     Example patterns:
         "*.py" - all Python files in current dir
         "src/**/*.py" - all Python files recursively under src/
@@ -36,13 +40,21 @@ def get_files_by_pattern(
     start = Path(start_dir)
     matches = set()
 
+    # Find all files matching include patterns
     for include_pattern in include_patterns:
         for fn in start.glob(include_pattern):
+            # Filter out ignored patterns
             if any(fn.match(ignore_pattern) for ignore_pattern in ignore_patterns):
                 continue
             matches.add(fn)
 
-    return sorted(matches)
+    # Filter by extensions
+    if extensions:
+        matches = {
+            fn for fn in matches if any(fn.name.endswith(ext) for ext in extensions)
+        }
+
+    return list(matches)
 
 
 def get_line_text_offset_spaces(file_path: str, line: int) -> int:

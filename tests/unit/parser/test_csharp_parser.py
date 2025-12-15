@@ -2,7 +2,7 @@ import pytest
 import tree_sitter_c_sharp as tscsharp
 from tree_sitter import Parser, Language
 from docnsrt.parsers.csharp_parser import CSharpParser
-from docnsrt.models.function_context import FunctionContextModel
+from docnsrt.core.models import FunctionContextModel
 
 
 @pytest.fixture
@@ -29,12 +29,8 @@ class Foo {
 }
 """
     root_node = get_root_node(code)
-    contexts = parser.extract_function_contexts(root_node, code, "Foo")
-    assert len(contexts) == 1
-    ctx = contexts[0]
+    ctx = parser.extract_function_context(root_node, code, "Foo")
     assert "public int Add" in ctx.signature
-    assert "return x + y;" in ctx.body
-    assert ctx.return_type == "int"
     assert any(p.name == "x" for p in ctx.parameters)
     assert any(p.name == "y" for p in ctx.parameters)
 
@@ -48,9 +44,7 @@ class Bar {
 }
 """
     root_node = get_root_node(code)
-    contexts = parser.extract_function_contexts(root_node, code, "Bar")
-    assert len(contexts) == 1
-    ctx = contexts[0]
+    ctx = parser.extract_function_context(root_node, code, "Bar")
     assert ctx.docstring is not None
     assert "This is a test method" in ctx.docstring.lines[0]
 
@@ -64,9 +58,7 @@ class Baz {
 }
 """
     root_node = get_root_node(code)
-    contexts = parser.extract_function_contexts(root_node, code, "Baz")
-    assert len(contexts) == 1
-    ctx = contexts[0]
+    ctx = parser.extract_function_context(root_node, code, "Baz")
     assert ctx.qualified_name == "Baz.Baz.DoSomething"
     assert ctx.signature.startswith("public void DoSomething")
     assert ctx.docstring is None

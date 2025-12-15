@@ -1,11 +1,11 @@
 """Formatters for C# docstrings."""
 
-from docnsrt.models.docstring_models import DocstringLocation
+from docnsrt.core.models import DocstringLocation
 import docnsrt.utils.file_utils as fu
-from docnsrt.models.function_context import FunctionContextModel
-from docnsrt.models.function_summary import FunctionSummaryModel
+from docnsrt.core.models import FunctionContextModel
+from docnsrt.core.models import DocstringTemplateModel
 from docnsrt.formatter.formatter_base import FormatterBase
-from docnsrt.models.formatted_summary_model import FormattedSummaryModel
+from docnsrt.core.models import FormattedDocstringModel
 
 COMMENT_START = "/// "
 
@@ -13,31 +13,32 @@ COMMENT_START = "/// "
 class CSharpXmlFormatter(FormatterBase):
     """Formatter for C# XML documentation comments."""
 
-    def get_formatted_documentation(
+    def get_formatted_docstring(
         self,
         file_path: str,
         func_context: FunctionContextModel,
-        func_summary: FunctionSummaryModel,
-    ) -> FormattedSummaryModel:
+        template_values: DocstringTemplateModel,
+    ) -> FormattedDocstringModel:
         function_signature_offset = fu.get_line_text_offset_spaces(
             file_path, func_context.start_line
         )
 
         lines = [
             COMMENT_START + "<summary>",
-            COMMENT_START + func_summary.summary.strip(),
+            COMMENT_START + template_values.summary.strip(),
             COMMENT_START + "</summary>",
         ]
 
-        if func_summary.parameters:
-            for param in func_summary.parameters:
+        if template_values.parameters:
+            for param in template_values.parameters:
                 name = param.name
                 desc = param.desc
                 lines.append(COMMENT_START + f"<param name=\"{name}\">{desc}</param>")
 
-        if func_summary.return_description:
+        if template_values.return_description:
             lines.append(
-                COMMENT_START + f"<returns>{func_summary.return_description}</returns>"
+                COMMENT_START
+                + f"<returns>{template_values.return_description}</returns>"
             )
 
         # Add newlines to each line
@@ -50,7 +51,7 @@ class CSharpXmlFormatter(FormatterBase):
                 f"Unable to read start line {func_context.start_line} from file {file_path}"
             )
 
-        formatted_summary = FormattedSummaryModel(
+        formatted_summary = FormattedDocstringModel(
             formatted_documentation=lines,
             start_line=func_context.start_line,  # XML comments go right above the signature
             offset_spaces=offset,

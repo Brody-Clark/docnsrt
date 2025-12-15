@@ -15,7 +15,7 @@ from rich.rule import Rule
 # from rich.spinner import Spinner
 from prompt_toolkit.styles import Style
 from prompt_toolkit.shortcuts import prompt
-from docnsrt.models.documentation_model import DocumentationModel
+from docnsrt.core.models import DocstringPresentationModel
 from docnsrt.utils import platform_utils
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ class UserResponseModel:
     Model for user responses.
     """
 
-    doc_model: DocumentationModel
+    doc_model: DocstringPresentationModel
     response: UserResponse
 
 
@@ -75,7 +75,7 @@ class Presenter:
     def __init__(self):
         self._console = Console()
 
-    def get_user_approval(self, doc: DocumentationModel) -> UserResponseModel:
+    def get_user_approval(self, doc: DocstringPresentationModel) -> UserResponseModel:
         """
         Gets user approval for the generated documentation.
         """
@@ -222,7 +222,7 @@ class Presenter:
         answer = prompt(message=message, style=blue_background_style)
         return answer
 
-    def interact(self, doc: DocumentationModel):
+    def interact(self, doc: DocstringPresentationModel):
         """
         Interacts with the user to accept, edit, skip, or quit the documentation generation.
         """

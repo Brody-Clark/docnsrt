@@ -1,9 +1,11 @@
 import unittest
 from unittest.mock import patch
 from docnsrt.formatter.python_formatters import PythonPepFormatter
-from docnsrt.models.function_context import FunctionContextModel
-from docnsrt.models.function_summary import FunctionSummaryModel
-from docnsrt.models.functional_models import DocstringModel
+from docnsrt.core.models import (
+    DocstringTemplateModel,
+    DocstringModel,
+    FunctionContextModel,
+)
 
 
 class TestPepFormatter(unittest.TestCase):
@@ -18,22 +20,19 @@ class TestPepFormatter(unittest.TestCase):
         test_func_context = FunctionContextModel(
             qualified_name="test.class.func",
             signature="def func()",
-            body="" "pass" "",
             parameters=[],
-            return_type="None",
             start_line=1,
-            end_line=3,
             docstring=DocstringModel(lines=[], start_line=2),
         )
-        test_func_summary = FunctionSummaryModel(
+        test_func_summary = DocstringTemplateModel(
             summary="this is a test function",
             return_description="returns nothing",
             parameters=[],
         )
-        test_doc_model = formatter.get_formatted_documentation(
+        test_doc_model = formatter.get_formatted_docstring(
             file_path="test_file.py",
             func_context=test_func_context,
-            func_summary=test_func_summary,
+            template_values=test_func_summary,
         )
 
         expected_docstring = [

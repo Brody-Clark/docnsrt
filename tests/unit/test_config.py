@@ -5,6 +5,7 @@ from docnsrt.config import (
     _resolve_vars,
 )
 
+
 def test__resolve_vars_handles_nested_and_list_structures():
     config = {
         "vars": {"A": "1", "B": "two"},

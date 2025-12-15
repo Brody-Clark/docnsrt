@@ -1,9 +1,11 @@
 """Base class for all formatters."""
 
 from abc import abstractmethod, ABC
-from docnsrt.models.function_context import FunctionContextModel
-from docnsrt.models.function_summary import FunctionSummaryModel
-from docnsrt.models.formatted_summary_model import FormattedSummaryModel
+from docnsrt.core.models import (
+    FunctionContextModel,
+    DocstringTemplateModel,
+    FormattedDocstringModel,
+)
 
 
 class FormatterBase(ABC):
@@ -12,12 +14,12 @@ class FormatterBase(ABC):
     """
 
     @abstractmethod
-    def get_formatted_documentation(
+    def get_formatted_docstring(
         self,
         file_path: str,
         func_context: FunctionContextModel,
-        func_summary: FunctionSummaryModel,
-    ) -> FormattedSummaryModel:
+        template_values: DocstringTemplateModel,
+    ) -> FormattedDocstringModel:
         """
         Creates a formatted documentation model that can be used to write a docstring into a source file.
 
