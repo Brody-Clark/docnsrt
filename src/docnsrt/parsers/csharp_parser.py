@@ -20,8 +20,14 @@ class CSharpParser(ParserBase):
         self._parser = Parser(self._language)
         self._query_str = """
         (
-        method_declaration
-            name: (identifier) @func.name
+            [
+                (method_declaration
+                    name: (identifier) @func.name
+                )
+                (local_function_statement
+                    name: (identifier) @func.name
+                )
+            ]
         )
         """
 
@@ -96,9 +102,14 @@ class CSharpParser(ParserBase):
         modifiers_str = " ".join(modifiers) if modifiers else ""
         identifiers_str = " ".join(identifiers) if identifiers else ""
         return_type = f" {return_type} " if return_type is not None else ""
-        parameters_str = self.get_node_text(parameters_node, source_code=source_code)
-
-        parameters = self.get_parameters(parameters_node, source_code)
+        parameters_str = (
+            self.get_node_text(parameters_node, source_code=source_code)
+            if parameters_node
+            else ""
+        )
+        parameters = (
+            self.get_parameters(parameters_node, source_code) if parameters_node else []
+        )
 
         return FunctionContextModel(
             qualified_name=module_name
@@ -123,7 +134,12 @@ class CSharpParser(ParserBase):
         # Look for preceding sibling nodes that are documentation comments
         docstring_lines = []
         start_line = node.start_point.row
-        current_node = node.prev_sibling
+
+        # Global functions have an extra parent node before accessing a comment node
+        if node.type == "local_function_statement":
+            current_node = node.parent.prev_sibling if node.parent else None
+        else:
+            current_node = node.prev_sibling
 
         if not current_node or current_node.type != "comment":
             return None
@@ -174,6 +190,8 @@ class CSharpParser(ParserBase):
         while parent is not None:
             if parent.type == "class_declaration":
                 class_name_node = parent.child_by_field_name("name")
+                if not class_name_node:
+                    continue
                 class_name = self.get_node_text(
                     class_name_node, source_code=source_code
                 )

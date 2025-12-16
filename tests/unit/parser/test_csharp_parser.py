@@ -11,16 +11,16 @@ def parser():
 
 
 @pytest.fixture
-def get_root_node():
-    def _get_root_node(source_code: str):
+def get_tree():
+    def _get_tree(source_code: str):
         _parser = Parser(Language(tscsharp.language()))
         tree = _parser.parse(source_code)
-        return tree.root_node
+        return tree
 
-    return _get_root_node
+    return _get_tree
 
 
-def test_extract_simple_method(parser, get_root_node):
+def test_extract_simple_method(parser, get_tree):
     code = b"""
 class Foo {
     public int Add(int x, int y) {
@@ -28,14 +28,46 @@ class Foo {
     }
 }
 """
-    root_node = get_root_node(code)
-    ctx = parser.extract_function_context(root_node, code, "Foo")
+    function_node = parser.get_function_nodes(get_tree(code))['func.name'][0].parent
+    ctx = parser.extract_function_context(function_node, code, "Foo")
     assert "public int Add" in ctx.signature
     assert any(p.name == "x" for p in ctx.parameters)
     assert any(p.name == "y" for p in ctx.parameters)
 
 
-def test_extract_method_with_comment(parser, get_root_node):
+def test_extract_method_with_multiline_star_comment(parser, get_tree):
+    code = b"""
+/*
+* multiline comment
+*/
+public void Test() {
+    return;
+}
+"""
+    func_node = parser.get_function_nodes(get_tree(code))['func.name'][0].parent
+    ctx = parser.extract_function_context(func_node, code, "Bar")
+    assert ctx.docstring is not None
+    assert len(ctx.docstring.lines) == 3
+    assert "multiline comment" in ctx.docstring.lines[1]
+
+
+def test_extract_method_with_multiline_basic_comment(parser, get_tree):
+    code = b"""
+// first
+// second
+public void Test() {
+    return;
+}
+"""
+    func_node = parser.get_function_nodes(get_tree(code))['func.name'][0].parent
+    ctx = parser.extract_function_context(func_node, code, "Bar")
+    assert ctx.docstring is not None
+    assert len(ctx.docstring.lines) == 2
+    assert "// first" in ctx.docstring.lines[0]
+    assert "// second" in ctx.docstring.lines[1]
+
+
+def test_extract_method_with_comment(parser, get_tree):
     code = b"""
 class Bar {
     // This is a test method
@@ -43,13 +75,13 @@ class Bar {
     }
 }
 """
-    root_node = get_root_node(code)
-    ctx = parser.extract_function_context(root_node, code, "Bar")
+    func_node = parser.get_function_nodes(get_tree(code))['func.name'][0].parent
+    ctx = parser.extract_function_context(func_node, code, "Bar")
     assert ctx.docstring is not None
     assert "This is a test method" in ctx.docstring.lines[0]
 
 
-def test_get_enclosing_class_name(parser, get_root_node):
+def test_get_enclosing_class_name(parser, get_tree):
     code = b"""
 class Baz {
     public void DoSomething() {
@@ -57,8 +89,8 @@ class Baz {
     }
 }
 """
-    root_node = get_root_node(code)
-    ctx = parser.extract_function_context(root_node, code, "Baz")
+    func_node = parser.get_function_nodes(get_tree(code))['func.name'][0].parent
+    ctx = parser.extract_function_context(func_node, code, "Baz")
     assert ctx.qualified_name == "Baz.Baz.DoSomething"
     assert ctx.signature.startswith("public void DoSomething")
     assert ctx.docstring is None

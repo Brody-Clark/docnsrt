@@ -7,7 +7,7 @@ from tree_sitter import Language, Parser
 from docnsrt.core.models import ParameterModel, DocstringModel, FunctionContextModel
 from docnsrt.parsers.parser_base import ParserBase
 
-logger = logging.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class PythonParser(ParserBase):

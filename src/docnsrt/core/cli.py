@@ -130,7 +130,6 @@ def parse_args() -> DocnsrtConfig:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    # CLI Argument for the configuration file
     parser.add_argument(
         "--config",
         "-c",
@@ -138,7 +137,7 @@ def parse_args() -> DocnsrtConfig:
         default=".docnsrt.yaml",
         help="Path to the YAML configuration file for docstring settings.",
     )
-    # Define Arguments
+
     parser.add_argument(
         "--files",
         nargs="+",
@@ -231,7 +230,7 @@ def parse_args() -> DocnsrtConfig:
 
     if app_config["config"] == ".docnsrt.yaml":
         # Load configuration first to use its values as defaults
-        # We start searching from the current working directory where the CLI is run.
+        # Start searching from the current working directory where the CLI is run.
         config_path, user_config = find_and_load_config(Path.cwd())
         config.update(user_config)
     else:
@@ -256,9 +255,9 @@ def parse_args() -> DocnsrtConfig:
         config.update(user_config)
         config_path = args.config
 
-    # Post-processing for boolean flags if we want config to override default.
+    # Post-processing for boolean flags to override defaults.
     # For flags using action='store_true', their default is False.
-    # If we want config to set them to True, we need to handle it after parsing.
+    # If config should set them to True, handle it after parsing.
     if app_config.get("write") is None and app_config.get("check") is None:
         parser.error("You must specify either --write or --check.")
 
@@ -281,7 +280,7 @@ def parse_args() -> DocnsrtConfig:
         app_config["check"] = True
 
     # If `project_dir` is not explicitly set, derive it from config file location
-    # This logic assumes `project_dir` in config is the true project root
+    # This assumes `project_dir` in config is the true project root
     if "project_dir" not in config and config:
         # If config was found, assume its parent directory is the project_dir
         config["project_dir"] = str(
@@ -293,7 +292,7 @@ def parse_args() -> DocnsrtConfig:
     if args.log_level:
         config["log_level"] = args.log_level
 
-    # update config with args
+    # Finally, update config with args
     config.update(app_config)
 
     return DocnsrtConfig.from_dict(config)
