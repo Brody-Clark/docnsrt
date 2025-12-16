@@ -20,7 +20,6 @@ class DocnsrtConfig:
     style: str = DocstringStyle.BASIC.value
     ignore_files: List[str] = field(default_factory=list)
     ignore_functions: List[str] = field(default_factory=list)
-    no_summary: bool = False
     check: bool = False
     write: bool = True
     force_all: bool = False
