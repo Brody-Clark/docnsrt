@@ -18,9 +18,9 @@ docnsrt supports several options for documentation generation.
 | `--functions <name...>`    | Specific function names or glob pattern to target (space-separated list) | `[*]`    |
 | `--ignore-functions <name...>`| Specific function names or glob pattern to ignore (space-separated list) | N/A   |
 | `--project-dir <path>`     | Path to project source.                                     | Current Working Directory |
-| `--language <language>`    | Language of source files.                                   | N/A |
+| `--language, -l <language>`    | Language of source files.                                   | N/A |
 | `--force-all`              | Skips prompting for each generated docstring. Force writes to files. | N/A |
-| `--style <style>`          | Genereated docstring format: *See supported formats*        | `None`    |
+| `--style, -s <style>`          | Genereated docstring format: *See supported formats*        | `None`    |
 | `-h, --help`               | Show help message and exit                                   | N/A     |
 
 ## Configuration File

@@ -60,15 +60,21 @@ See the [Poetry installation docs](https://python-poetry.org/docs/#installing-wi
     poetry install
     ```
 
-3. Print the Activate.ps1 Script for the Virtual Environment
+3. Print the Activate Script for the Virtual Environment
 
     ```bash
     poetry env activate
     ```
-4. Run the Activate Script for the Virtaul Environment
-    ```bash
-    "<Path_To_VirtualEnv>\Scripts\Activate.ps1"
-    ```
+4. Run the Activate Script for the Virtual Environment
+    - Windows:
+        ```bash
+        "<Path_To_VirtualEnv>\Scripts\Activate.ps1"
+        ```
+    - MacOS/Linux:
+        ```bash
+        source <Path_To_Virtual_Env_Activate>
+        ```
+
 > [!NOTE]
 > On Windows you may need to relax Powershell policies regarding script execution. To do this, you can run:
 >  ```powershell
@@ -281,19 +287,18 @@ poetry install --with dev
 
 ## Branching Strategy
 
-This project uses a simple branching model to keep development organized and stable.
+This project uses a trunk-based development model:
 
-- **main**: The stable release branch. Only thoroughly tested code is merged here.
-- **dev**: The active development branch. All new features, bug fixes, and changes are merged into dev before being promoted to main.
-- **feature branches**: For new features, improvements, or bug fixes. These branches should be created from dev and merged back into dev via Pull Request.
+- **main**: The stable release branch. Feature/bugfix branches are based of main and merged directly back in after a PR.
+- **feature/bufix branches**: For new features, improvements, or bug fixes. These branches should be based on main and merged back into main via Pull Request.
 
 ### Creating a Feature Branch
 
-1. Make sure you are up to date with the dev branch:
+1. Make sure you are up to date with the main branch:
 
     ```bash
-    git checkout dev
-    git pull origin dev
+    git checkout main
+    git pull origin main
     ```
 
 2. Create your feature branch:
@@ -318,14 +323,3 @@ This project uses a simple branching model to keep development organized and sta
 - When your work is ready, open a Pull Request (PR) **from your feature branch into dev**.
 - Fill out the PR template and describe your changes clearly.
 - Ensure your branch passes all tests and code style checks before requesting a review.
-
-### Merging
-
-- Feature branches are merged into dev after review and approval.
-- Periodically, dev is merged into main for releases.
-
-**Summary:**
-
-- Always branch off dev.
-- Always merge feature branches into dev via Pull Request.
-- Do not commit directly to main or dev unless performing a release or hotfix.

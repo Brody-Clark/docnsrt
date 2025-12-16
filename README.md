@@ -1,7 +1,7 @@
 > [!NOTE]
 > This project is a work in progress. As such, some features may be missing or incomplete
 
-<h1 align="center">docnsrt</h1><h2 align="center"> Documentation Generation Framework</h2>
+<h1 align="center">docnsrt</h1><h2 align="center"> A Docstring Insertion Tool</h2>
 
 <p align="center">
 Supported Languages:
@@ -12,7 +12,7 @@ Supported Languages:
 
 ## Intro
 
-docnsrt is a CLI-based multi-language source code docstring template insertion tool. It is designed to streamline the process of writing consistently formatted soure code documentation. Major docstring formats are supported out-of-the-box with the ability to also define custom formats.
+docnsrt is an offline-first CLI tool for fast, deterministic docstring generation. It inserts language-specific docstring templates directly into code and provides an interactive interface for completing and validating documentation.
 
 ### Example Usage
 
@@ -37,18 +37,18 @@ docnsrt --write --file example_script.py --function claculate_rectangle_area --s
 ```py
 def calculate_rectangle_area(length, width, unit="meters"):
   # example_script.py
-  """ __SUMMARY__
+  """ _summary_
 
   Args:
-    length: __DESC__
-    width: __DESC__
-    unit: __DESC__
+    length: _desc_
+    width: _desc_
+    unit: _desc_
 
   Returns:
-    __RETURNS__
+    _desc_
 
   Raises:
-    __RAISES__
+    _desc_
 
   """
   if length < 0 or width < 0:
