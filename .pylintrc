@@ -7,4 +7,5 @@ disable=
     W0718,  # Catching too general exception
     R0912,  # Too many branches
     R0915,  # Too many statements
+    R0801,  # Similar lines
     too-few-public-methods

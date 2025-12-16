@@ -1,7 +1,7 @@
 [project]
-name = "docmancer"
+name = "docnsrt"
 version = "0.1.0"
-description = "A Python CLI tool for automated documentation generation and insertion."
+description = "A Python CLI tool for automated template docstring insertion."
 authors = [
     {name = "Brody Clark",email = "brodyclark97@gmail.com"}
 ]
@@ -21,10 +21,7 @@ tree-sitter-c-sharp = "^0.23.1"
 tree-sitter-cpp = "^0.23.4"
 tree-sitter-javascript = "^0.23.1"
 tree-sitter-python = "^0.23.6"
-fastapi = "^0.118.0"
-uvicorn = "^0.37.0"
-requests = "^2.32.5"
-llama-cpp-python = "^0.3.16"
+portalocker = "^3.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
@@ -41,4 +38,4 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-docmancer = "docmancer.__main__:main" # 'command_name = package.module:function'
+docnsrt = "docnsrt.__main__:main" # 'command_name = package.module:function'

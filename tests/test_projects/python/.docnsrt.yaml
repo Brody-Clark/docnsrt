@@ -1,0 +1,10 @@
+log_level: INFO
+style: PEP
+language: python
+files:
+  - "src/**/*.py"
+functions:
+  - "*"
+ignore_files:
+  - "**/test_*.py"       # Ignore all test files
+  - "**/__init__.py"     # Ignore __init__.py files

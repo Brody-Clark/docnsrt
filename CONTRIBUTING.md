@@ -50,8 +50,8 @@ See the [Poetry installation docs](https://python-poetry.org/docs/#installing-wi
 1. Clone the repository
 
     ```bash
-    git clone https://github.com/brody-clark/docmancer.git
-    cd Docmancer
+    git clone https://github.com/brody-clark/docnsrt.git
+    cd docnsrt
     ```
 
 2. Install Dependencies
@@ -141,7 +141,7 @@ To start debugging, open the Run & Debug sidebar and select the desired configur
 
 #### Testing project files
 
-Each supported language should have a corresponding test_projects folder with test source files, prompt.yaml, and .docmancer.yaml. This makes it easier to debug and test how the tool works on actual source files. VSCode's configurations can allow modification of execution arguments and environment variables to make debugging different setups easier. 
+Each supported language should have a corresponding test_projects folder with test source files, prompt.yaml, and .docnsrt.yaml. This makes it easier to debug and test how the tool works on actual source files. VSCode's configurations can allow modification of execution arguments and environment variables to make debugging different setups easier. 
 
 ### Testing
 

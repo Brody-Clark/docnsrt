@@ -1,4 +1,4 @@
-# Installing Docmancer
+# Installing docnsrt
 
 ## Prerequisites
 
@@ -14,8 +14,8 @@ pip install poetry
 
 1. Clone the Repository
     ```bash
-    git clone https://github.com/brody-clark/docmancer.git
-    cd docmancer
+    git clone https://github.com/brody-clark/docnsrt.git
+    cd docnsrt
     ```
 2. Install Dependencies
     ```bash
@@ -23,7 +23,7 @@ pip install poetry
     ```
 3. Test the Tool (Optional)
     ```bash
-    poetry run docmancer --help
+    poetry run docnsrt --help
     ```
 4. Install as a Global CLI Tool
     ```bash
@@ -33,7 +33,7 @@ pip install poetry
     ```
 5. Confirm Installation
     ```bash
-    docmancer --help
+    docnsrt --help
     ```
 
 ## Uninstallation
