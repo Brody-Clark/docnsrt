@@ -29,7 +29,7 @@ def calculate_rectangle_area(length, width, unit="meters"):
 #### Input
 
 ```bash
-docnsrt --write --file example_script.py --function claculate_rectangle_area --style "PEP" --language python
+docnsrt --write --file example_script.py --function claculate_rectangle_area --style PEP --language python
 ```
 
 #### Output (with generated docstring)
