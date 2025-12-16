@@ -35,8 +35,8 @@ docnsrt --write --file example_script.py --function claculate_rectangle_area --s
 #### Output (with generated docstring)
 
 ```py
+# example_script.py
 def calculate_rectangle_area(length, width, unit="meters"):
-  # example_script.py
   """ _summary_
 
   Args:
