@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import List
 import os
 import fnmatch
-from tree_sitter import Node
+from tree_sitter import Node, Language, Query
 import docnsrt.utils.file_utils as fu
 from docnsrt.core.models import FunctionContextModel
 
@@ -18,11 +18,11 @@ class ParserBase(ABC):
     """
 
     def __init__(self):
-        self._language = None
+        self._language : Language = None
         self._parser = None
-        self._query_str = None
+        self._query_str: str = None
 
-    def get_function_nodes(self, tree):
+    def get_function_nodes(self, tree) -> dict[str, list[Node]]:
         """
         Retrieves function nodes from the parse tree.
         """
