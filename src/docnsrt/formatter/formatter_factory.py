@@ -3,7 +3,7 @@ Formatter factory for creating formatter instances.
 """
 
 from docnsrt.formatter.formatter_base import FormatterBase
-from docnsrt.formatter.python_formatters import PythonPepFormatter
+from docnsrt.formatter.python_formatters import PythonPepFormatter, PythonNumpyFormatter
 from docnsrt.formatter.csharp_formatters import CSharpXmlFormatter
 from docnsrt.core.styles import DocstringStyle
 from docnsrt.core.languages import Languages
@@ -33,6 +33,8 @@ class FormatterFactory:
         if language == Languages.PYTHON.value:
             if style.lower() == DocstringStyle.PEP.lower():
                 return PythonPepFormatter()
+            if style.lower() == DocstringStyle.NUMPY.lower():
+                return PythonNumpyFormatter()
         if language == Languages.CSHARP.value:
             if style.lower() == DocstringStyle.XML.lower():
                 return CSharpXmlFormatter()
