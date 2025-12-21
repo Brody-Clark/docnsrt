@@ -51,22 +51,29 @@ class Math:
         perimeter = num + 1 + other_num
         return perimeter
 
+
 def basic_typed(a: int, b: str, c: float):
     pass
+
 
 def unions(a: int | str, b: list[int | None]):
     pass
 
+
 from typing import Union, Optional
+
 
 def typing_unions(a: Union[int, str], b: Optional[int]):
     pass
 
+
 def splats(*args, **kwargs):
     pass
 
+
 def typed_splats(*args: int, **kwargs: str):
     pass
+
 
 def kw_only(a: int, *, b: str, c: float = 3.14):
     pass

@@ -5,9 +5,9 @@ from abc import ABC, abstractmethod
 from typing import List
 import os
 import fnmatch
+from tree_sitter import Node
 import docnsrt.utils.file_utils as fu
 from docnsrt.core.models import FunctionContextModel
-from tree_sitter import Node
 
 logger = logging.getLogger(__name__)
 
@@ -135,12 +135,14 @@ class ParserBase(ABC):
         Returns:
             str: The text content of the node.
         """
-        return source_code[node.start_byte : node.end_byte].decode("utf-8") if node else ""
+        return (
+            source_code[node.start_byte : node.end_byte].decode("utf-8") if node else ""
+        )
 
     def get_first_child_of_type(self, root: Node, t: str) -> Node:
         """
         Returns first child with type t under the root node.
-        
+
         Args:
             root (tree_sitter.Node): parent node to search under
             t (str): the name of the type to search for
@@ -151,7 +153,7 @@ class ParserBase(ABC):
             if child.type == t:
                 return child
         return None
-    
+
     @abstractmethod
     def extract_function_context(
         self, root_node, source_code: str, module_name: str

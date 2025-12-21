@@ -1,5 +1,6 @@
 """Formatters for Python code."""
 
+from typing import List
 from docnsrt.formatter.formatter_base import FormatterBase
 from docnsrt.core.models import (
     DocstringLocation,
@@ -8,18 +9,21 @@ from docnsrt.core.models import (
     FunctionContextModel,
 )
 import docnsrt.utils.file_utils as fu
-from typing import List
 
 INDENT_SPACES = 4
 
-def _get_docstring_model(lines: List[str], func_context: FunctionContextModel, offset: int) ->FormattedDocstringModel:
+
+def _get_docstring_model(
+    lines: List[str], func_context: FunctionContextModel, offset: int
+) -> FormattedDocstringModel:
     return FormattedDocstringModel(
-            formatted_documentation=lines,
-            start_line=func_context.start_line
-            + 1,  # pep doc strings go right below the signature
-            offset_spaces=offset,
-            docstring_location=DocstringLocation.BELOW,
-        )
+        formatted_documentation=lines,
+        start_line=func_context.start_line
+        + 1,  # pep doc strings go right below the signature
+        offset_spaces=offset,
+        docstring_location=DocstringLocation.BELOW,
+    )
+
 
 class PythonPepFormatter(FormatterBase):
     """
@@ -119,4 +123,3 @@ class PythonNumpyFormatter(FormatterBase):
             )
 
         return _get_docstring_model(lines, func_context, offset)
-

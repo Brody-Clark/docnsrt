@@ -40,12 +40,15 @@ def add(a, b):
     return a + b
 """
     root_node = get_root_node(code).child(2)
-    ctx:FunctionContextModel = parser.extract_function_context(root_node, code, "test_module")
+    ctx: FunctionContextModel = parser.extract_function_context(
+        root_node, code, "test_module"
+    )
     assert ctx.qualified_name == "test_module.add"
     assert ctx.docstring is None  # Docstring is None, comments are not captured
     assert len(ctx.parameters) == 2
     assert ParameterModel(name="a", type="any", desc="") in ctx.parameters
-    assert ParameterModel(name="b", type="any", desc="") in ctx.parameters 
+    assert ParameterModel(name="b", type="any", desc="") in ctx.parameters
+
 
 def test_extract_function_with_typed_parameters(parser, get_root_node):
     code = b"""
@@ -53,10 +56,12 @@ def add(a: int, b: str):
     return a + b
 """
     root_node = get_root_node(code).child(0)
-    ctx:FunctionContextModel = parser.extract_function_context(root_node, code, "test_module")
+    ctx: FunctionContextModel = parser.extract_function_context(
+        root_node, code, "test_module"
+    )
     assert len(ctx.parameters) == 2
-    assert ParameterModel(name="a", type="int", desc="") in ctx.parameters 
-    assert ParameterModel(name="b", type="str", desc="") in ctx.parameters 
+    assert ParameterModel(name="a", type="int", desc="") in ctx.parameters
+    assert ParameterModel(name="b", type="str", desc="") in ctx.parameters
 
 
 def test_extract_function_with_splat_list_parameters(parser, get_root_node):
@@ -65,10 +70,13 @@ def add(*args, b: str):
     return a + b
 """
     root_node = get_root_node(code).child(0)
-    ctx:FunctionContextModel = parser.extract_function_context(root_node, code, "test_module")
+    ctx: FunctionContextModel = parser.extract_function_context(
+        root_node, code, "test_module"
+    )
     assert len(ctx.parameters) == 2
     assert ParameterModel(name="*args", type="any", desc="") in ctx.parameters
     assert ParameterModel(name="b", type="str", desc="") in ctx.parameters
+
 
 def test_extract_function_with_typed_dict_splat_args(parser, get_root_node):
     code = b"""
@@ -76,10 +84,12 @@ def add(**kwargs: int, b: int):
     return a + b
 """
     root_node = get_root_node(code).child(0)
-    ctx:FunctionContextModel = parser.extract_function_context(root_node, code, "test_module")
+    ctx: FunctionContextModel = parser.extract_function_context(
+        root_node, code, "test_module"
+    )
     assert len(ctx.parameters) == 2
-    assert ParameterModel(name="**kwargs", type="int", desc="") in ctx.parameters 
-    assert ParameterModel(name="b", type="int", desc="") in ctx.parameters 
+    assert ParameterModel(name="**kwargs", type="int", desc="") in ctx.parameters
+    assert ParameterModel(name="b", type="int", desc="") in ctx.parameters
 
 
 def test_extract_function_with_dict_splat_args(parser, get_root_node):
@@ -88,10 +98,12 @@ def add(**kwargs, b: str):
     return a + b
 """
     root_node = get_root_node(code).child(0)
-    ctx:FunctionContextModel = parser.extract_function_context(root_node, code, "test_module")
+    ctx: FunctionContextModel = parser.extract_function_context(
+        root_node, code, "test_module"
+    )
     assert len(ctx.parameters) == 2
-    assert ParameterModel(name="**kwargs", type="any", desc="") in ctx.parameters 
-    assert ParameterModel(name="b", type="str", desc="") in ctx.parameters 
+    assert ParameterModel(name="**kwargs", type="any", desc="") in ctx.parameters
+    assert ParameterModel(name="b", type="str", desc="") in ctx.parameters
 
 
 def test_extract_function_with_typed_splat_args(parser, get_root_node):
@@ -100,10 +112,13 @@ def add(*args: int):
     return a + b
 """
     root_node = get_root_node(code).child(0)
-    ctx:FunctionContextModel = parser.extract_function_context(root_node, code, "test_module")
+    ctx: FunctionContextModel = parser.extract_function_context(
+        root_node, code, "test_module"
+    )
     assert ctx.qualified_name == "test_module.add"
     assert len(ctx.parameters) == 1
     assert ParameterModel(name="*args", type="int", desc="") in ctx.parameters
+
 
 def test_extract_nested_function(parser, get_root_node):
     code = b"""

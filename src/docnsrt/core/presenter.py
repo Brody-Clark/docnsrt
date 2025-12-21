@@ -13,6 +13,7 @@ from rich.console import Console
 from rich.rule import Rule
 from rich.markup import escape
 from rich.table import Table
+
 # from rich.spinner import Spinner
 from prompt_toolkit.styles import Style
 from prompt_toolkit.shortcuts import prompt
@@ -59,13 +60,14 @@ class UserResponseModel:
 # 'bg:#0000FF' is hex for blue.
 blue_background_style = Style.from_dict(
     {
-        "prompt": "#FFFFFF bg:#000094", 
+        "prompt": "#FFFFFF bg:#000094",
         "bottom-toolbar": "#FFFFFF bg:#0000FF",
         "completion-menu": "bg:#333333 #FFFFFF",
-        "arg-style": "bold #FFD700", 
+        "arg-style": "bold #FFD700",
         "input": "#FFFFFF bg:#0000FF",
     }
 )
+
 
 class Presenter:
     """Presenter class for user interaction and displaying information."""
@@ -115,7 +117,9 @@ class Presenter:
 
     def print_error(self, message: str):
         """Prints an error message."""
-        self._console.print(f"[bold red]Error:[/bold red] {escape(message)}", style="red")
+        self._console.print(
+            f"[bold red]Error:[/bold red] {escape(message)}", style="red"
+        )
 
     def print_success(self, message: str):
         """Prints a success message."""
@@ -238,7 +242,7 @@ class Presenter:
         grid.add_row(
             f"[grey69]File:[/grey69] [yellow]{doc.file_path or 'unknown'}",
             f"[grey69]Qualified Name:[/grey69] [magenta]{doc.qualified_name}[/magenta]",
-            f"[grey69]Line:[/grey69] [cyan]{doc.new_docstring.start_line or 'unknown'}"
+            f"[grey69]Line:[/grey69] [cyan]{doc.new_docstring.start_line or 'unknown'}",
         )
         self._console.print(grid)
         self._console.print(f"[grey69]Function:[/grey69] [grey]{escape(doc.signature)}")

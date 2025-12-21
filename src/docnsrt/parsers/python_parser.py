@@ -25,32 +25,35 @@ class PythonParser(ParserBase):
             name: (identifier) @func.name
         )
         """
-    def _get_list_splat_parameter(self, parameter_node: Node, source_code: str) -> ParameterModel:
+
+    def _get_list_splat_parameter(
+        self, parameter_node: Node, source_code: str
+    ) -> ParameterModel:
         name_node = self.get_first_child_of_type(parameter_node, "identifier")
         type_node = parameter_node.child_by_field_name("type")
         param_name = "*" + self.get_node_text(name_node, source_code)
-        param_type =  self.get_node_text(type_node, source_code) if type_node else "any"
+        param_type = self.get_node_text(type_node, source_code) if type_node else "any"
 
         return ParameterModel(name=param_name, type=param_type, desc="")
 
-    def _get_dictionary_splat_parameter(self, parameter_node: Node, source_code: str) -> ParameterModel:
+    def _get_dictionary_splat_parameter(
+        self, parameter_node: Node, source_code: str
+    ) -> ParameterModel:
         name_node = self.get_first_child_of_type(parameter_node, "identifier")
         type_node = parameter_node.child_by_field_name("type")
         param_name = "**" + self.get_node_text(name_node, source_code)
-        param_type =  self.get_node_text(type_node, source_code) if type_node else "any"
+        param_type = self.get_node_text(type_node, source_code) if type_node else "any"
 
         return ParameterModel(name=param_name, type=param_type, desc="")
 
     def _get_node_name_string(self, node: Node, source_code: str) -> str:
         name_node = node.child_by_field_name("name")
-        return self.get_node_text(
-            name_node, source_code
-        ) if name_node else ""
+        return self.get_node_text(name_node, source_code) if name_node else ""
+
     def _get_node_type_string(self, node: Node, source_code: str) -> str:
         type_node = node.child_by_field_name("type")
-        return self.get_node_text(
-            type_node, source_code
-        ) if type_node else "any"
+        return self.get_node_text(type_node, source_code) if type_node else "any"
+
     def get_parameters(self, parameters_node, source_code) -> List:
         """Extracts parameters from a function definition node.
 
@@ -63,31 +66,37 @@ class PythonParser(ParserBase):
         """
         parameters = []
         for child in parameters_node.children:
-            if child.type == "parameter" or child.type == "identifier":
-                param_name = self.get_node_text(
-                    child, source_code
-                )
-                parameters.append(
-                    ParameterModel(name=param_name, type="any", desc="")
-                )
-            elif child.type == "typed_parameter" or child.type == "typed_default_parameter":
+            if child.type in ["parameter", "identifier"]:
+                param_name = self.get_node_text(child, source_code)
+                parameters.append(ParameterModel(name=param_name, type="any", desc=""))
+            elif child.type in ["typed_parameter", "typed_default_parameter"]:
 
                 if child.children:
                     if child.children[0].type == "list_splat_pattern":
-                        name_node = self.get_first_child_of_type(child.children[0], "identifier")
+                        name_node = self.get_first_child_of_type(
+                            child.children[0], "identifier"
+                        )
                         param_name = "*" + self.get_node_text(name_node, source_code)
                         param_type = self._get_node_type_string(child, source_code)
-                        parameters.append(ParameterModel(name=param_name, type=param_type, desc=""))
+                        parameters.append(
+                            ParameterModel(name=param_name, type=param_type, desc="")
+                        )
                     elif child.children[0].type == "dictionary_splat_pattern":
-                        name_node = self.get_first_child_of_type(child.children[0], "identifier")
+                        name_node = self.get_first_child_of_type(
+                            child.children[0], "identifier"
+                        )
                         param_name = "**" + self.get_node_text(name_node, source_code)
                         param_type = self._get_node_type_string(child, source_code)
-                        parameters.append(ParameterModel(name=param_name, type=param_type, desc=""))
+                        parameters.append(
+                            ParameterModel(name=param_name, type=param_type, desc="")
+                        )
                     elif child.children[0].type == "identifier":
                         name_node = child.children[0]
-                        param_name = self.get_node_text(
-                            name_node, source_code
-                        ) if name_node else ""
+                        param_name = (
+                            self.get_node_text(name_node, source_code)
+                            if name_node
+                            else ""
+                        )
                         param_type = self._get_node_type_string(child, source_code)
                         parameters.append(
                             ParameterModel(name=param_name, type=param_type, desc="")
@@ -95,7 +104,9 @@ class PythonParser(ParserBase):
             elif child.type == "list_splat_pattern":
                 parameters.append(self._get_list_splat_parameter(child, source_code))
             elif child.type == "dictionary_splat_pattern":
-                parameters.append(self._get_dictionary_splat_parameter(child, source_code))
+                parameters.append(
+                    self._get_dictionary_splat_parameter(child, source_code)
+                )
 
         return parameters
 
@@ -132,7 +143,7 @@ class PythonParser(ParserBase):
         """Returns the name of the given node or empty string."""
         name_node = root_node.child_by_field_name("name")
         if not name_node:
-            logger.warn("Invalid name node")
+            logger.error("Invalid name node")
             return ""
         name = self.get_node_text(name_node, source_code=source_code)
         return name
