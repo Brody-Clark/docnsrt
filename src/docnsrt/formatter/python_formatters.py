@@ -14,12 +14,24 @@ INDENT_SPACES = 4
 
 
 def _get_docstring_model(
-    lines: List[str], func_context: FunctionContextModel, offset: int
+    lines: List[str], func_context: FunctionContextModel, file_path: str
 ) -> FormattedDocstringModel:
+
+    function_signature_offset = fu.get_line_text_offset_spaces(
+        file_path, func_context.start_line
+    )
+
+    if function_signature_offset >= 0:
+        offset = function_signature_offset + INDENT_SPACES
+    else:
+        raise ValueError(
+            f"Unable to read start line {func_context.start_line} from file {file_path}"
+        )
+
     return FormattedDocstringModel(
         formatted_documentation=lines,
         start_line=func_context.start_line
-        + 1,  # pep doc strings go right below the signature
+        + 1,  # Python docstrings go right below the signature
         offset_spaces=offset,
         docstring_location=DocstringLocation.BELOW,
     )
@@ -37,38 +49,23 @@ class PythonPepFormatter(FormatterBase):
         template_values: DocstringTemplateModel,
     ) -> FormattedDocstringModel:
 
-        function_signature_offset = fu.get_line_text_offset_spaces(
-            file_path, func_context.start_line
-        )
-
-        lines = ['"""', template_values.summary.strip(), ""]
+        lines = ['"""', template_values.summary, ""]
 
         if template_values.parameters:
             lines.append("Args:")
             for param in template_values.parameters:
-                name = param.name
-                typ = param.type if param.type is not None else "Any"
-                desc = param.desc
-                lines.append(f"    {name} ({typ}): {desc}")
+                lines.append(f"    {param.name} ({param.type}): {param.desc}")
 
         if template_values.return_description:
             lines.append("")
             lines.append("Returns:")
-            lines.append(f"    {template_values.return_description.strip()}")
+            lines.append(f"    {template_values.return_description}")
 
         lines.append('"""')
 
-        # add newlines to each line
         lines = [line + "\n" for line in lines]
 
-        if function_signature_offset >= 0:
-            offset = function_signature_offset + INDENT_SPACES
-        else:
-            raise ValueError(
-                f"Unable to read start line {func_context.start_line} from file {file_path}"
-            )
-
-        return _get_docstring_model(lines, func_context, offset)
+        return _get_docstring_model(lines, func_context, file_path)
 
 
 class PythonNumpyFormatter(FormatterBase):
@@ -83,28 +80,21 @@ class PythonNumpyFormatter(FormatterBase):
         template_values: DocstringTemplateModel,
     ) -> FormattedDocstringModel:
 
-        function_signature_offset = fu.get_line_text_offset_spaces(
-            file_path, func_context.start_line
-        )
-
-        lines = ['"""', template_values.summary.strip(), ""]
+        lines = ['"""', template_values.summary, ""]
 
         lines.append("Parameters")
         lines.append("----------")
 
         if template_values.parameters:
             for param in template_values.parameters:
-                name = param.name
-                typ = param.type if param.type is not None else "Any"
-                desc = param.desc
-                lines.append(f"{name} : ({typ})")
-                lines.append(f"  {desc}")
+                lines.append(f"{param.name} : ({param.type})")
+                lines.append(f"  {param.desc}")
         lines.append("")
 
         if template_values.return_description:
             lines.append("Returns")
             lines.append("-------")
-            lines.append(f"{template_values.return_description.strip()}")
+            lines.append(f"{template_values.return_description}")
             lines.append("")
 
         lines.append("Examples")
@@ -112,14 +102,6 @@ class PythonNumpyFormatter(FormatterBase):
         lines.append("")
         lines.append('"""')
 
-        # add newlines to each line
         lines = [line + "\n" for line in lines]
 
-        if function_signature_offset >= 0:
-            offset = function_signature_offset + INDENT_SPACES
-        else:
-            raise ValueError(
-                f"Unable to read start line {func_context.start_line} from file {file_path}"
-            )
-
-        return _get_docstring_model(lines, func_context, offset)
+        return _get_docstring_model(lines, func_context, file_path)

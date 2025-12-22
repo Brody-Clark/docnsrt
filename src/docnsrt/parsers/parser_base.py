@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import List
 import os
 import fnmatch
-from tree_sitter import Node, Language, Query
+from tree_sitter import Node, Language
 import docnsrt.utils.file_utils as fu
 from docnsrt.core.models import FunctionContextModel
 
@@ -18,7 +18,7 @@ class ParserBase(ABC):
     """
 
     def __init__(self):
-        self._language : Language = None
+        self._language: Language = None
         self._parser = None
         self._query_str: str = None
 

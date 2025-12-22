@@ -165,6 +165,7 @@ def test_extract_invalid_function_node_throws(parser, get_root_node):
     with pytest.raises(ValueError):
         context = parser.extract_function_context(root_node, code, "test_module")
 
+
 def test_extract_class_and_method(parser, get_root_node):
     code = b"""
 class MyClass:
@@ -176,6 +177,7 @@ class MyClass:
     context = parser.extract_function_context(root_node, code, "test_module")
     assert "test_module.MyClass.method" in context.qualified_name
     assert context.docstring is None  # No docstring, only comments
+
 
 def test_get_function_nodes(parser):
     code = b"""

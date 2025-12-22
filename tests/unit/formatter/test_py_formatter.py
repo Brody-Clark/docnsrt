@@ -5,7 +5,7 @@ from docnsrt.core.models import (
     DocstringTemplateModel,
     DocstringModel,
     FunctionContextModel,
-    ParameterModel
+    ParameterModel,
 )
 
 
@@ -26,7 +26,7 @@ class TestPepFormatter(unittest.TestCase):
             docstring=DocstringModel(lines=[], start_line=2),
         )
         test_func_summary = DocstringTemplateModel(
-            summary="this is a test function",
+            summary="_summary_",
             return_description="_desc_",
             parameters=[ParameterModel("param", "any", "_desc_")],
         )
@@ -38,7 +38,7 @@ class TestPepFormatter(unittest.TestCase):
 
         expected_docstring = [
             '"""\n',
-            "this is a test function\n",
+            "_summary_\n",
             "\n",
             "Args:\n",
             "    param (any): _desc_\n",
@@ -56,6 +56,7 @@ class TestPepFormatter(unittest.TestCase):
         )  # pep docstrings go right below the signature
         assert test_doc_model.formatted_documentation == expected_docstring
 
+
 class TestNumpyFormatter(unittest.TestCase):
     @patch("docnsrt.formatter.python_formatters.fu.get_line_text_offset_spaces")
     def test_get_formatted_documentation(self, mock_get_line_text_offset_spaces):
@@ -72,7 +73,7 @@ class TestNumpyFormatter(unittest.TestCase):
             docstring=DocstringModel(lines=[], start_line=2),
         )
         test_func_summary = DocstringTemplateModel(
-            summary="this is a test function",
+            summary="_summary_",
             return_description="_desc_",
             parameters=[ParameterModel("param", "any", "_desc_")],
         )
@@ -84,7 +85,7 @@ class TestNumpyFormatter(unittest.TestCase):
 
         expected_docstring = [
             '"""\n',
-            "this is a test function\n",
+            "_summary_\n",
             "\n",
             "Parameters\n",
             "----------\n",
