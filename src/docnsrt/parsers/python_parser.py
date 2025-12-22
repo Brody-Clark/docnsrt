@@ -3,7 +3,7 @@
 import logging
 from typing import List
 import tree_sitter_python as tspython
-from tree_sitter import Language, Parser
+from tree_sitter import Language, Parser, Node
 from docnsrt.core.models import ParameterModel, DocstringModel, FunctionContextModel
 from docnsrt.parsers.parser_base import ParserBase
 
@@ -26,6 +26,34 @@ class PythonParser(ParserBase):
         )
         """
 
+    def _get_list_splat_parameter(
+        self, parameter_node: Node, source_code: str
+    ) -> ParameterModel:
+        name_node = self.get_first_child_of_type(parameter_node, "identifier")
+        type_node = parameter_node.child_by_field_name("type")
+        param_name = "*" + self.get_node_text(name_node, source_code)
+        param_type = self.get_node_text(type_node, source_code) if type_node else "any"
+
+        return ParameterModel(name=param_name, type=param_type, desc="")
+
+    def _get_dictionary_splat_parameter(
+        self, parameter_node: Node, source_code: str
+    ) -> ParameterModel:
+        name_node = self.get_first_child_of_type(parameter_node, "identifier")
+        type_node = parameter_node.child_by_field_name("type")
+        param_name = "**" + self.get_node_text(name_node, source_code)
+        param_type = self.get_node_text(type_node, source_code) if type_node else "any"
+
+        return ParameterModel(name=param_name, type=param_type, desc="")
+
+    def _get_node_name_string(self, node: Node, source_code: str) -> str:
+        name_node = node.child_by_field_name("name")
+        return self.get_node_text(name_node, source_code) if name_node else ""
+
+    def _get_node_type_string(self, node: Node, source_code: str) -> str:
+        type_node = node.child_by_field_name("type")
+        return self.get_node_text(type_node, source_code) if type_node else "any"
+
     def get_parameters(self, parameters_node, source_code) -> List:
         """Extracts parameters from a function definition node.
 
@@ -38,16 +66,48 @@ class PythonParser(ParserBase):
         """
         parameters = []
         for child in parameters_node.children:
-            if child.type == "parameter":
-                param_name = self.get_node_text(
-                    child.child_by_field_name("name"), source_code
-                )
-                param_type = self.get_node_text(
-                    child.child_by_field_name("type"), source_code
-                )
+            if child.type in ["parameter", "identifier"]:
+                param_name = self.get_node_text(child, source_code)
+                parameters.append(ParameterModel(name=param_name, type="any", desc=""))
+            elif child.type in ["typed_parameter", "typed_default_parameter"]:
+
+                if child.children:
+                    if child.children[0].type == "list_splat_pattern":
+                        name_node = self.get_first_child_of_type(
+                            child.children[0], "identifier"
+                        )
+                        param_name = "*" + self.get_node_text(name_node, source_code)
+                        param_type = self._get_node_type_string(child, source_code)
+                        parameters.append(
+                            ParameterModel(name=param_name, type=param_type, desc="")
+                        )
+                    elif child.children[0].type == "dictionary_splat_pattern":
+                        name_node = self.get_first_child_of_type(
+                            child.children[0], "identifier"
+                        )
+                        param_name = "**" + self.get_node_text(name_node, source_code)
+                        param_type = self._get_node_type_string(child, source_code)
+                        parameters.append(
+                            ParameterModel(name=param_name, type=param_type, desc="")
+                        )
+                    elif child.children[0].type == "identifier":
+                        name_node = child.children[0]
+                        param_name = (
+                            self.get_node_text(name_node, source_code)
+                            if name_node
+                            else ""
+                        )
+                        param_type = self._get_node_type_string(child, source_code)
+                        parameters.append(
+                            ParameterModel(name=param_name, type=param_type, desc="")
+                        )
+            elif child.type == "list_splat_pattern":
+                parameters.append(self._get_list_splat_parameter(child, source_code))
+            elif child.type == "dictionary_splat_pattern":
                 parameters.append(
-                    ParameterModel(name=param_name, type=param_type, desc="")
+                    self._get_dictionary_splat_parameter(child, source_code)
                 )
+
         return parameters
 
     def get_qualified_name(self, node, source_code: str) -> str:
@@ -74,7 +134,7 @@ class PythonParser(ParserBase):
                     f"{class_name}.{qualified_name}" if qualified_name else class_name
                 )
             elif parent.type == "module":
-                # Assuming module name is derived from file name or provided context
+                # Module name is derived from file name or provided context
                 break
             parent = parent.parent
         return qualified_name
@@ -83,13 +143,13 @@ class PythonParser(ParserBase):
         """Returns the name of the given node or empty string."""
         name_node = root_node.child_by_field_name("name")
         if not name_node:
-            logger.warn("Invalid name node")
+            logger.error("Invalid name node")
             return ""
         name = self.get_node_text(name_node, source_code=source_code)
         return name
 
     def get_docstring(self, block_node, source_code: str) -> DocstringModel:
-        """Creates a docstring model from a body node"""
+        """Extracts a docstring model from a body node if it exists. Returns None if not."""
         first_stmt = block_node.child(0)
         if first_stmt and first_stmt.type == "expression_statement":
             expr = first_stmt.child(0)
@@ -121,25 +181,10 @@ class PythonParser(ParserBase):
         if block_node:
             docstring = self.get_docstring(block_node, source_code)
 
-        qualified_name = name
-        while root_node is not None:
-            if root_node.type == "class_definition":
-                class_name_node = root_node.child_by_field_name("name")
-                class_name = self.get_node_text(
-                    class_name_node, source_code=source_code
-                )
-                qualified_name = (
-                    f"{class_name}.{qualified_name}" if qualified_name else class_name
-                )
-            elif root_node.type == "module":
-                qualified_name = (
-                    f"{module_name}.{qualified_name}" if qualified_name else module_name
-                )
-                break
-            root_node = root_node.parent
+        qualified_name = self.get_qualified_name(root_node, source_code)
 
         context = FunctionContextModel(
-            qualified_name=qualified_name,
+            qualified_name=f"{module_name}.{qualified_name}",
             parameters=parameters,
             signature=signature,
             docstring=docstring,

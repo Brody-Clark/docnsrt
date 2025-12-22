@@ -11,6 +11,8 @@ from typing import List, Callable, Any, Coroutine
 from dataclasses import dataclass
 from rich.console import Console
 from rich.rule import Rule
+from rich.markup import escape
+from rich.table import Table
 
 # from rich.spinner import Spinner
 from prompt_toolkit.styles import Style
@@ -55,16 +57,14 @@ class UserResponseModel:
     response: UserResponse
 
 
-# Define a style for the prompt (e.g., blue background)
-# 'bg:#0000FF' is hex for blue. You can use standard color names like 'bg:blue'
-# or more specific colors like 'bg:#1e4369' for a darker blue.
+# 'bg:#0000FF' is hex for blue.
 blue_background_style = Style.from_dict(
     {
-        "prompt": "#FFFFFF bg:#000094",  # White foreground on a slightly darker blue background for the prompt string itself
-        "bottom-toolbar": "#FFFFFF bg:#0000FF",  # Example: if you had a toolbar
-        "completion-menu": "bg:#333333 #FFFFFF",  # Example: styling for auto-completion menu
-        "arg-style": "bold #FFD700",  # Example: style for argument names
-        "input": "#FFFFFF bg:#0000FF",  # White text on blue background for user input
+        "prompt": "#FFFFFF bg:#000094",
+        "bottom-toolbar": "#FFFFFF bg:#0000FF",
+        "completion-menu": "bg:#333333 #FFFFFF",
+        "arg-style": "bold #FFD700",
+        "input": "#FFFFFF bg:#0000FF",
     }
 )
 
@@ -117,7 +117,9 @@ class Presenter:
 
     def print_error(self, message: str):
         """Prints an error message."""
-        self._console.print(f"[bold red]Error:[/bold red] {message}", style="red")
+        self._console.print(
+            f"[bold red]Error:[/bold red] {escape(message)}", style="red"
+        )
 
     def print_success(self, message: str):
         """Prints a success message."""
@@ -232,21 +234,26 @@ class Presenter:
         self._console.print("\n")
         self._console.clear()
         self._console.print(Rule(style="grey69", title="Source"))
-        self._console.print(
-            f"[grey69]File:[/grey69] [yellow]{doc.file_path or 'unknown'}"
+        grid = Table.grid(expand=True)
+        grid.add_column(justify="left")
+        grid.add_column(justify="left")
+        grid.add_column(justify="center")
+
+        grid.add_row(
+            f"[grey69]File:[/grey69] [yellow]{doc.file_path or 'unknown'}",
+            f"[grey69]Qualified Name:[/grey69] [magenta]{doc.qualified_name}[/magenta]",
+            f"[grey69]Line:[/grey69] [cyan]{doc.new_docstring.start_line or 'unknown'}",
         )
-        self._console.print(
-            f"[grey69]Line:[/grey69] [cyan]{doc.new_docstring.start_line or 'unknown'}"
-        )
-        self._console.print(f"[grey69]Function:[/grey69] [grey]{doc.signature}")
+        self._console.print(grid)
+        self._console.print(f"[grey69]Function:[/grey69] [grey]{escape(doc.signature)}")
 
         if doc.existing_docstring:
             current_lines = "\n".join(doc.existing_docstring.lines)
             self._console.print("[grey69]Existing Docstring:")
-            self._console.print(f"[pale_green1]{current_lines.strip()}")
+            self._console.print(f"[pale_green1]{escape(current_lines.strip())}")
         self._console.print(Rule(style="grey69", title="Generated Docstring"))
         formatted_doc = "".join(doc.new_docstring.lines).strip()
-        self._console.print(f"[green]{formatted_doc}")
+        self._console.print(f"[green]{escape(formatted_doc)}")
         self._console.print(Rule(style="grey69"))
 
         result = self.get_blue_prompt(

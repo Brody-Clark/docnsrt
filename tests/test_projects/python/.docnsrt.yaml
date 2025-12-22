@@ -1,5 +1,5 @@
 log_level: INFO
-style: PEP
+style: numpy
 language: python
 files:
   - "src/**/*.py"
