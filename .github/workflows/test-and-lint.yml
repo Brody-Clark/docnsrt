@@ -2,9 +2,9 @@ name: Lint and Test
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ main ]
   pull_request:
-    branches: [ dev ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -27,5 +27,8 @@ jobs:
     - name: Check formatting with Black
       run: poetry run black --check .
 
+    - name: Run Lint Check
+      run: poetry run pylint ./src/
+      
     - name: Run tests
       run: poetry run pytest
