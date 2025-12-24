@@ -60,3 +60,4 @@ ignore_functions:     # Functions to ignore by pattern
 
 - PEP
 - XML
+- Numpy
