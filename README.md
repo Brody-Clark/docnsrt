@@ -12,7 +12,7 @@ Supported Languages:
 
 ## Intro
 
-docnsrt is a CLI-based, multi-language, multi-style docstring template insertion tool. It inserts language-specific docstring templates directly into code and provides an interactive interface for completing and validating documentation.
+docnsrt is a CLI-based docstring template insertion tool that supports multiple languages and docstring styles. It inserts language-specific docstring templates directly into code and provides an interactive interface for completing and validating documentation.
 
 ### Example Usage
 
