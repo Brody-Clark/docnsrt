@@ -12,7 +12,7 @@ Supported Languages:
 
 ## Intro
 
-docnsrt is an offline-first CLI tool for fast, deterministic docstring generation. It inserts language-specific docstring templates directly into code and provides an interactive interface for completing and validating documentation.
+docnsrt is a CLI-based, multi-language, multi-style docstring template insertion tool. It inserts language-specific docstring templates directly into code and provides an interactive interface for completing and validating documentation.
 
 ### Example Usage
 
@@ -32,7 +32,7 @@ def calculate_rectangle_area(length, width, unit="meters"):
 docnsrt --write --file example_script.py --function calculate_rectangle_area --style PEP --language python
 ```
 
-#### Output (with generated docstring)
+#### Output (with generated docstring template)
 
 ```py
 # example_script.py
